@@ -4,8 +4,8 @@ from db import fetch_all, execute, get_db_connection, create_all_tables
 app = Flask(__name__)
 app.secret_key = "hnkl_secret_key"
 
-@app.before_first_request
-def init_db():
+# ✅ Run once when app starts (Flask 3 compatible)
+with app.app_context():
     create_all_tables()
 
 
