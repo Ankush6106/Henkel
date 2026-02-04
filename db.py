@@ -5,16 +5,15 @@ from mysql.connector import Error
 def get_db_connection():
     try:
         conn = mysql.connector.connect(
-            host=os.environ["MYSQL_HOST"],
-            user=os.environ["MYSQL_USER"],
-            password=os.environ["MYSQL_PASSWORD"],
-            database=os.environ["MYSQL_DATABASE"],
-            port=int(os.environ.get("MYSQL_PORT", 3306)),
-            autocommit=True
+            host=os.getenv("MYSQL_HOST"),
+            user=os.getenv("MYSQL_USER"),
+            password=os.getenv("MYSQL_PASSWORD"),
+            database=os.getenv("MYSQL_DATABASE"),
+            port=int(os.getenv("MYSQL_PORT", 3306)),
         )
         return conn
-    except Error as e:
-        print("❌ MySQL connection failed:", e)
+    except Exception as e:
+        print("DB connection failed:", e)
         return None
 
 
@@ -1222,7 +1221,7 @@ def create_all_tables():
     create_quotation_section_3_8_2_2_machine_capacity_material_b_table()
 
 
-create_all_tables()
+# create_all_tables()
 # =======================================================
 
 
