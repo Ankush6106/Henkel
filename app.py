@@ -4,8 +4,9 @@ from db import fetch_all, execute, get_db_connection, create_all_tables
 app = Flask(__name__)
 app.secret_key = "hnkl_secret_key"
 
-# ⚠️ Create tables ONLY ONCE at startup
-create_all_tables()
+@app.before_first_request
+def init_db():
+    create_all_tables()
 
 
 @app.route("/", methods=["GET", "POST"])
