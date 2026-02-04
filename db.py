@@ -2,21 +2,19 @@ import os
 import mysql.connector
 from mysql.connector import Error
 
-# ---------------- Database Connection ----------------
-
 def get_db_connection():
     try:
         conn = mysql.connector.connect(
-            host=os.getenv("${{RAILWAY_PRIVATE_DOMAIN}}"),
-            user=os.getenv("root"),
-            password=os.getenv("DVadasUVYhvUOjNFXKzyeCgjouLCQqTn"),
-            database=os.getenv("${{MYSQL_DATABASE}}"),
-            port=int(os.getenv("MYSQL_PORT", 3306)),
+            host=os.getenv("MYSQLHOST"),
+            user=os.getenv("MYSQLUSER"),
+            password=os.getenv("MYSQLPASSWORD"),
+            database=os.getenv("MYSQLDATABASE"),
+            port=int(os.getenv("MYSQLPORT")),
             use_pure=True
         )
         return conn
     except Error as e:
-        print(f"Error connecting to MySQL: {e}")
+        print("Error connecting to MySQL:", e)
         return None
 
 # ---------------- Execute Query ----------------
