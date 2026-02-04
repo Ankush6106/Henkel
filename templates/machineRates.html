@@ -1,0 +1,111 @@
+<div class="table-responsive">
+  <table class="table table-bordered table-sm estimation-table">
+    <!-- Estimation banner -->
+    <thead>
+      <tr class="estimation-row">
+        <th></th>
+        <th colspan="14">JUST FOR ESTIMATION</th>
+      </tr>
+
+      <!-- Machine short description -->
+      <tr class="machine-header">
+        <th>Machine short description</th>
+        <th colspan="2">IK-IK 200t</th>
+        <th colspan="2">IK-IK 320t</th>
+        <th colspan="2">2K 250t</th>
+        <th colspan="2">2K 400t</th>
+        <th colspan="2">IK 80t</th>
+        <th colspan="2">IK 100t</th>
+        <th colspan="2">IK 200t</th>
+      </tr>
+
+      <!-- Material split -->
+      <tr class="sub-header">
+        <th></th>
+        {% for i in range(7) %}
+        <th>Mat. A</th>
+        <th>Mat. B</th>
+        {% endfor %}
+      </tr>
+    </thead>
+
+    <tbody>
+      <!-- Production data -->
+      <tr class="section-header">
+        <td colspan="15">Production Data</td>
+      </tr>
+
+      <tr>
+        <td>Production days per year</td>
+        {% for m in machines %}
+        <td>{{ m.prod_days }}</td>
+        <td>{{ m.prod_days }}</td>
+        {% endfor %}
+      </tr>
+
+      <tr>
+        <td>Shifts per day</td>
+        {% for m in machines %}
+        <td>{{ m.shifts }}</td>
+        <td>{{ m.shifts }}</td>
+        {% endfor %}
+      </tr>
+
+      <!-- Machine Invest -->
+      <tr class="section-header">
+        <td colspan="15">Machine Invest (act. value)</td>
+      </tr>
+
+      <tr>
+        <td>Molding Machine</td>
+        {% for m in machines %}
+        <td>{{ m.mold_a }}</td>
+        <td>{{ m.mold_b }}</td>
+        {% endfor %}
+      </tr>
+
+      <!-- Totals -->
+      <tr class="total-row">
+        <td>Total Machine Rate A+B</td>
+        {% for m in machines %}
+        <td colspan="2">{{ m.total_rate }}</td>
+        {% endfor %}
+      </tr>
+    </tbody>
+  </table>
+</div>
+<style>
+  .estimation-table th,
+  .estimation-table td {
+    font-size: 12px;
+    padding: 4px;
+    text-align: center;
+  }
+
+  .machine-header th {
+    background: #ffff99;
+    font-weight: bold;
+  }
+
+  .sub-header th {
+    background: #e6ffe6;
+  }
+
+  .section-header td {
+    background: #fff2cc;
+    font-weight: bold;
+    text-align: left;
+  }
+
+  .total-row td {
+    background: yellow;
+    font-weight: bold;
+  }
+
+  .estimation-row th {
+    background: red;
+    color: white;
+    text-align: center;
+    font-weight: bold;
+  }
+</style>

@@ -1,0 +1,222 @@
+{% extends "base.html" %}
+{% block title %}Material Cost{% endblock %}
+{% block content %}
+
+<h4 class="text-danger mb-2">Material B</h4>
+
+<form method="post">
+  <!-- keep other selections -->
+  <input type="hidden" name="material_id_a" value="{{ selected_id_mat_a }}">
+  <input type="hidden" name="material_id_c" value="{{ selected_id_mat_c }}">
+  <input type="hidden" name="selected_machine" value="{{ selected_machine_id }}">
+  <input type="hidden" name="labour_id" value="{{ selected_labour_id }}">
+
+  <div class="table-responsive">
+    <table class="table table-bordered table-sm align-middle">
+      <thead class="table-danger">
+        <tr>
+          <th style="min-width:220px">Material</th>
+          <th class="text-center">Density [kg/dm³]</th>
+          <th class="text-center bg-warning">Price/kg (actual)</th>
+          <th class="text-center">FSS Nr.</th>
+          <th class="text-center">Order-Quantity /kg</th>
+
+          <th class="text-center">Tracomb PO 3142 %</th>
+          <th class="text-center">Tracomb PO 3132 %</th>
+          <th class="text-center">Tracomb PO 3170 %</th>
+
+          <th class="text-center text-success">EVA VS 430 %</th>
+          <th class="text-center text-success">EVA 18002D %</th>
+          <th class="text-center text-success">EVA Repsol PA538 %</th>
+
+          <th class="text-center">Luvomaxx LB/S %</th>
+          <th class="text-center">Lotader 8900 %</th>
+          <th class="text-center">Elvax 4260 %</th>
+          <th class="text-center">Evatane 2805 %</th>
+          <th class="text-center">Evatane 2825 %</th>
+          <th class="text-center">Irganox 1010 %</th>
+          <th class="text-center">Escorene UL00728cc %</th>
+
+          <th class="text-center">Price/kg (old 1)</th>
+          <th class="text-center">Price/kg (old 2)</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <tr>
+          <!-- Material dropdown (GET-style behavior using POST) -->
+          <td>
+            <select
+              name="material_id_b"
+              class="form-select form-select-sm text-primary"
+              onchange="this.form.submit()"
+            >
+              <option value="">-- Select Material --</option>
+              {% for m in materials_b %}
+                <option value="{{ m.id }}"
+                  {% if selected_id_mat_b and selected_id_mat_b|int == m.id %}selected{% endif %}
+                >
+                  {{ m.Material_B }}
+                </option>
+              {% endfor %}
+            </select>
+          </td>
+
+          {% if selected_row_mat_b %}
+            {% set r = selected_row_mat_b[0] %}
+
+            <td class="text-center">{{ r.Density_kg_dm3 }}</td>
+
+            <td class="bg-warning text-end text-danger fw-bold">
+              {{ "%.4f"|format(r.Price_per_kg_actual) }}
+            </td>
+
+            <td class="text-center">{{ r.FSS_Nr }}</td>
+            <td class="text-end">{{ "%.2f"|format(r.Order_quantity_kg*100) }}</td>
+
+            <td class="text-end">{{ "%.2f"|format(r.Tracomb_PO_3142_percent) }}</td>
+            <td class="text-end">{{ "%.2f"|format(r.Tracomb_PO_3132_percent) }}</td>
+            <td class="text-end">{{ "%.2f"|format(r.Tracomb_PO_3170_percent) }}</td>
+
+            <td class="text-end">{{ "%.2f"|format(r.EVA_VS_430_percent) }}</td>
+            <td class="text-end">{{ "%.2f"|format(r.EVA_18002D_percent) }}</td>
+            <td class="text-end">{{ "%.2f"|format(r.EVA_Repsol_PA538_percent) }}</td>
+
+            <td class="text-end">{{ "%.2f"|format(r.Luvomaxx_LB_S_percent) }}</td>
+            <td class="text-end">{{ "%.2f"|format(r.Lotader_AX_8900_percent) }}</td>
+            <td class="text-end">{{ "%.2f"|format(r.Elvax_4260_percent) }}</td>
+            <td class="text-end">{{ "%.2f"|format(r.Evatane_2805_percent) }}</td>
+            <td class="text-end">{{ "%.2f"|format(r.Evatane_2825_percent) }}</td>
+            <td class="text-end">{{ "%.2f"|format(r.Irganox_1010_percent) }}</td>
+            <td class="text-end">{{ "%.2f"|format(r.Escorene_UL00728cc_percent) }}</td>
+
+            <td class="text-end">{{ "%.2f"|format(r.Price_per_kg_old_1) }}</td>
+            <td class="text-end">{{ "%.2f"|format(r.Price_per_kg_old_2) }}</td>
+
+          {% else %}
+            <td colspan="19" class="text-center text-muted">
+              Please select a material
+            </td>
+          {% endif %}
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+</form>
+
+
+<hr>
+<!--=======================================================-->
+<h4 class="text-danger mb-2">Material A</h4>
+
+<form method="get">
+  <input type="hidden" name="material_id_b" value="{{ selected_id_mat_b }}">
+  <input type="hidden" name="material_id_c" value="{{ selected_id_mat_c }}">
+  <input type="hidden" name="selected_machine" value="{{ selected_machine_id }}">
+  <input type="hidden" name="labour_id" value="{{ selected_labour_id }}">
+
+  <div class="table-responsive">
+    <table class="table table-bordered table-sm align-middle">
+      <thead class="table-danger">
+        <tr>
+          <th class="text-start" style="min-width:220px">Material</th>
+          <th class="text-center">Density (kg/dm³)</th>
+          <th class="text-center">FSS Nr.</th>
+          <th class="text-center">Order Qty (kg)</th>
+          <th class="text-center bg-warning">Price / kg (actual)</th>
+          <th class="text-center">Price / kg (old 1)</th>
+          <th class="text-center">Price / kg (old 2)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>
+            <select
+              name="material_id_a"
+              class="form-select form-select-sm text-primary"
+              onchange="this.form.submit()"
+            >
+              <option value="">-- Select Material --</option>
+              {% for m in materials_a %}
+                <option value="{{ m.id }}"
+                  {% if selected_id_mat_a == m.id|string %}selected{% endif %}
+                >
+                  {{ m.Material_A }}
+                </option>
+              {% endfor %}
+            </select>
+          </td>
+
+          {% if selected_row_mat_a %}
+            {% set r = selected_row_mat_a[0] %}
+            <td class="text-center  text-primary">{{ r.Density_kg_dm3 }}</td>
+            <td class="text-center  text-success">{{ r.FSS_Nr }}</td>
+            <td class="text-center text-success">{{ r.Order_quantity_kg }}</td>
+            <td class="text-center text-success bg-warning">{{ r.Price_per_kg_actual }}</td>
+            <td class="text-center text-success">{{ r.Price_per_kg_old_1 }}</td>
+            <td class="text-center text-success">{{ r.Price_per_kg_old_2 }}</td>
+          {% else %}
+            <td colspan="4" class="text-center text-muted">
+              Please select a material
+            </td>
+          {% endif %}
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</form>
+<hr>
+<!--=======================================================-->
+<h4 class="text-danger mb-2">Material C</h4>
+
+<form method="get">
+  <input type="hidden" name="material_id_a" value="{{ selected_id_mat_a }}">
+  <input type="hidden" name="material_id_b" value="{{ selected_id_mat_b }}">
+  <input type="hidden" name="selected_machine" value="{{ selected_machine_id }}">
+  <input type="hidden" name="labour_id" value="{{ selected_labour_id }}">
+
+
+  <div class="table-responsive">
+    <table class="table table-bordered table-sm align-middle">
+      <thead class="table-danger">
+        <tr>
+          <th class="text-start" style="min-width:220px">Material</th>
+          <th class="text-center">Density (kg/dm³)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>
+            <select
+              name="material_id_c"
+              class="form-select form-select-sm text-primary"
+              onchange="this.form.submit()"
+            >
+              <option value="">-- Select Material --</option>
+              {% for m in materials_c %}
+                <option value="{{ m.id }}"
+                  {% if selected_id_mat_c == m.id|string %}selected{% endif %}
+                >
+                  {{ m.Material_C }}
+                </option>
+              {% endfor %}
+            </select>
+          </td>
+
+          {% if selected_row_mat_c %}
+            {% set r = selected_row_mat_c[0] %}
+            <td class="text-center text-primary">{{ r.Density_kg_dm3 }}</td>
+          {% else %}
+            <td colspan="2" class="text-center text-muted">
+              Please select a material
+            </td>
+          {% endif %}
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</form>
+
+
+{% endblock %}

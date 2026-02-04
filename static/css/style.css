@@ -1,0 +1,11 @@
+.sidebar {
+    border-right: 1px solid #f8d7da;
+}
+
+.nav-link {
+    color: #333;
+}
+
+.nav-link:hover {
+    background-color: #f1f1f1;
+}

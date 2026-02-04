@@ -1,0 +1,60 @@
+{% extends "base.html" %} {% block title %}Material Cost{% endblock %} {% block
+content %}
+<!--====================================================-->
+<h4 class="text-danger mb-2">Labour Cost</h4>
+
+<form method="get">
+  <!-- keep previous selections -->
+  <input type="hidden" name="material_id_a" value="{{ selected_id_mat_a }}">
+  <input type="hidden" name="material_id_b" value="{{ selected_id_mat_b }}">
+  <input type="hidden" name="material_id_c" value="{{ selected_id_mat_c }}">
+  <input type="hidden" name="selected_machine" value="{{ selected_machine_id }}">
+
+  <div class="table-responsive">
+    <table class="table table-bordered table-sm align-middle">
+      <thead class="table-danger">
+        <tr>
+          <th class="text-center" style="min-width:220px">role_name</th>
+          <th class="text-center">unit</th>
+          <th class="text-center">price_actual</th>
+          <th class="text-center">price_old_1</th>
+          <th class="text-center">price_old_2</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>
+            <select
+              name="labour_id"
+              class="form-select form-select-sm"
+              onchange="this.form.submit()"
+            >
+              <option value="">-- Select Material --</option>
+              {% for m in labours %}
+                <option value="{{ m.id }}"
+                  {% if selected_labour_id == m.id|string %}selected{% endif %}
+                >
+                  {{ m.role_name }}
+                </option>
+              {% endfor %}
+            </select>
+          </td>
+
+          {% if selected_labour_row %}
+            {% set r = selected_labour_row[0] %}
+            <td class="text-center">{{ r.unit }}</td>
+            <td class="text-center text-success">{{ r.price_actual }}</td>
+            <td class="text-center text-success">{{ r.price_old_1 }}</td>
+            <td class="text-center text-success">{{ r.price_old_2 }}</td>  
+          {% else %}
+            <td colspan="2" class="text-center text-muted">
+              Please select a material
+            </td>
+          {% endif %}
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</form>
+
+{% endblock %}

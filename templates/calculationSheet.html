@@ -1,0 +1,4108 @@
+{% extends "base.html" %} {% block title %}Material Cost{% endblock %} {% block
+content %}
+
+<div class="d-flex gap-2 mb-4">
+  <button class="btn btn-danger" onclick="toggleQuotationForm()">
+    Quotation
+  </button>
+
+  <button
+    class="btn btn-outline-danger"
+    onclick="togglePartSpecificationForm()"
+    {%
+    if
+    not
+    quotation_id
+    %}disabled{%
+    endif
+    %}
+  >
+    Part Specification
+  </button>
+
+  <button
+    class="btn btn-outline-secondary"
+    {%
+    if
+    not
+    positions
+    %}disabled{%
+    endif
+    %}
+  >
+    Costing
+  </button>
+</div>
+
+{% if not quotation_id %}
+<small class="text-muted"> Save quotation to enable Part Specification </small>
+{% endif %}
+
+<!-- Toggle Button -->
+{% if not quotation_id %}
+<h4 class="text-danger mb-3">Quotation Details</h4>
+<button class="btn btn-outline-danger mb-3" onclick="toggleQuotationForm()">
+  + Add Quotation
+</button>
+{% endif %}
+
+<!-- Quotation Form Card -->
+<div id="quotationFormCard" class="card shadow-sm d-none">
+  <div class="card-body">
+    <form method="POST" action="/save_quotation">
+      <div class="row mb-3">
+        <div class="col-md-6">
+          <label class="form-label">Internal Project</label>
+          <input
+            type="text"
+            name="internal_Project"
+            class="form-control"
+            required
+          />
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label">Vehicle Code</label>
+          <input type="text" name="vehicle_code" class="form-control" />
+        </div>
+      </div>
+
+      <div class="row mb-3">
+        <div class="col-md-6">
+          <label class="form-label">OEM SOP</label>
+          <input type="text" name="OEM_SOP" class="form-control" />
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label">Henkel PL</label>
+          <input type="text" name="henkel_PL" class="form-control" />
+        </div>
+      </div>
+
+      <div class="row mb-3">
+        <div class="col-md-6">
+          <label class="form-label">Quotation Date</label>
+          <input type="date" name="quotation_date" class="form-control" />
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label">Quotation Revision Level</label>
+          <input
+            type="number"
+            name="quotation_rev_level"
+            class="form-control"
+          />
+        </div>
+      </div>
+
+      <div class="row mb-3">
+        <div class="col-md-6">
+          <label class="form-label">Supplier</label>
+          <input type="text" name="supplier" class="form-control" />
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label">Supplier Contact</label>
+          <input
+            type="text"
+            name="supplier_contact"
+            class="form-control"
+            maxlength="15"
+          />
+        </div>
+      </div>
+
+      <div class="row mb-3">
+        <div class="col-md-6">
+          <label class="form-label">LCUR for Quotation</label>
+          <input type="text" name="LCUR_for_quotation" class="form-control" />
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label">LCUR Abbreviation</label>
+          <input type="text" name="LCUR_abbreviation" class="form-control" />
+        </div>
+      </div>
+
+      <div class="text-end">
+        <button type="submit" class="btn btn-danger">Save Quotation</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!--Part specifications form-->
+<!-- Toggle Button -->
+{% if quotation_id %}
+<h4 class="text-danger mb-3">Part specifications</h4>
+
+<button
+  type="button"
+  class="btn btn-outline-danger mb-3"
+  onclick="togglePartSpecificationForm()"
+>
+  + Part specifications
+</button>
+{% endif %}
+
+<div id="partSpecificationFormCard" class="card shadow-sm d-none">
+  <div class="card-body">
+    <h5 class="text-danger">Generate Positions</h5>
+    {% if quotation_id %}
+    <form method="POST" action="/generate_positions/{{ quotation_id }}">
+      <label>No. of Positions</label>
+      <input type="number" name="pos_count" min="1" max="100" required />
+      <button class="btn btn-sm btn-danger">Generate</button>
+    </form>
+    {% endif %}
+
+    <form method="POST" action="/save_section_1/{{ quotation_id }}">
+      <div class="table-responsive table-scroll">
+        <table class="table table-bordered align-middle mt-4">
+          <thead class="table-light text-center">
+            <tr>
+              <th>POS Nr.</th>
+              {% for pos in positions %}
+              <th>Pos.{{ pos.pos_no }}</th>
+              {% endfor %}
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr class="table-primary section-main">
+              <td colspan="{{ positions|length + 1 }}">
+                <strong>1.1 Project Details per Part</strong>
+              </td>
+            </tr>
+
+            <tr class="table-secondary section-sub">
+              <td colspan="{{ positions|length + 1 }}">
+                <strong>Part Identification</strong>
+              </td>
+            </tr>
+
+            <tr>
+              <td>Section</td>
+              {% for pos in positions %}
+              <td>
+                <input name="section[{{ pos.id }}]" class="form-control" />
+              </td>
+              {% endfor %}
+            </tr>
+            <tr>
+              <td>Design for offer</td>
+              {% for pos in positions %}
+              <td>
+                <input
+                  name="design_for_offer[{{ pos.id }}]"
+                  class="form-control"
+                />
+              </td>
+              {% endfor %}
+            </tr>
+            <tr>
+              <td>Customer Part Number</td>
+              {% for pos in positions %}
+              <td>
+                <input
+                  name="customer_part_number[{{ pos.id }}]"
+                  class="form-control"
+                />
+              </td>
+              {% endfor %}
+            </tr>
+            <tr>
+              <td>Customer Part Name</td>
+              {% for pos in positions %}
+              <td>
+                <input
+                  name="customer_part_name[{{ pos.id }}]"
+                  class="form-control"
+                />
+              </td>
+              {% endfor %}
+            </tr>
+            <tr>
+              <td>Henkel IDH Number</td>
+              {% for pos in positions %}
+              <td>
+                <input name="idh_number[{{ pos.id }}]" class="form-control" />
+              </td>
+              {% endfor %}
+            </tr>
+            <tr>
+              <td>IMDS Number</td>
+              {% for pos in positions %}
+              <td>
+                <input
+                  type="text"
+                  name="imds_number[{{ pos.id }}]"
+                  class="form-control"
+                />
+              </td>
+              {% endfor %}
+            </tr>
+            <!--======================-->
+            <tr class="table-secondary">
+              <td colspan="{{ positions|length + 1 }}">
+                <strong>Design & Concept</strong>
+              </td>
+            </tr>
+            <tr>
+              <td>Henkel PN / Design level</td>
+              {% for pos in positions %}
+              <td>
+                <input
+                  type="number"
+                  name="design_level[{{ pos.id }}]"
+                  class="form-control"
+                />
+              </td>
+              {% endfor %}
+            </tr>
+            <tr>
+              <td>Part concept</td>
+              {% for pos in positions %}
+              <td>
+                <select name="part_concept[{{ pos.id }}]" class="form-control">
+                  <option value="">-- Select --</option>
+                  {% for pc in part_concepts %}
+                  <option value="{{ pc.id }}">{{ pc.partConceptName }}</option>
+                  {% endfor %}
+                </select>
+              </td>
+              {% endfor %}
+            </tr>
+            <tr>
+              <td>Design Concept</td>
+              {% for pos in positions %}
+              <td>
+                <select
+                  name="design_concept[{{ pos.id }}]"
+                  class="form-control"
+                >
+                  <option value="">-- Select --</option>
+                  {% for dc in design_concepts %}
+                  <option value="{{ dc.id }}">
+                    {{ dc.designConceptName }}
+                  </option>
+                  {% endfor %}
+                </select>
+              </td>
+              {% endfor %}
+            </tr>
+            <tr>
+              <td>Clip Design</td>
+              {% for pos in positions %}
+              <td>
+                <input
+                  type="number"
+                  name="clip_design[{{ pos.id }}]"
+                  class="form-control"
+                />
+              </td>
+              {% endfor %}
+            </tr>
+            <tr>
+              <td>Number of Clips</td>
+              {% for pos in positions %}
+              <td>
+                <input
+                  type="number"
+                  name="number_of_clips[{{ pos.id }}]"
+                  class="form-control"
+                />
+              </td>
+              {% endfor %}
+            </tr>
+            <tr>
+              <td>Gap to the panel</td>
+              {% for pos in positions %}
+              <td>
+                <input
+                  type="number"
+                  name="gap_to_panel[{{ pos.id }}]"
+                  class="form-control"
+                />
+              </td>
+              {% endfor %}
+            </tr>
+            <tr>
+              <td>Design Features</td>
+              {% for pos in positions %}
+              <td>
+                <input
+                  type="text"
+                  name="design_features[{{ pos.id }}]"
+                  class="form-control"
+                />
+              </td>
+              {% endfor %}
+            </tr>
+            <tr>
+              <td>Life time (years)</td>
+              {% for pos in positions %}
+              <td>
+                <input
+                  type="number"
+                  name="lifetime_years[{{ pos.id }}]"
+                  class="form-control"
+                />
+              </td>
+              {% endfor %}
+            </tr>
+            <!--=========================-->
+            <tr class="table-secondary">
+              <td colspan="{{ positions|length + 1 }}">
+                <strong>Production Volume – Plant / Car / Derivatives</strong>
+              </td>
+            </tr>
+            <!--pos_plant_derivatives-->
+            {% for d in range(1, 9) %}
+            <tr>
+              <td>Plant / Car / Derivat {{ d }} [(avg.) cars/a]</td>
+
+              {% for pos in positions %}
+              <td class="text-center">
+                <div class="d-flex gap-2 align-items-center">
+                  <input
+                    type="checkbox"
+                    class="form-check-input derivative-check"
+                    data-pos="{{ pos.id }}"
+                    data-derivative="{{ d }}"
+                    name="derivative_selected[{{ pos.id }}][{{ d }}]"
+                    onchange="this.nextElementSibling.disabled = !this.checked;calculatePlantTotals();"
+                  />
+
+                  <input
+                    type="number"
+                    class="form-control plant-input"
+                    name="derivative_value[{{ pos.id }}][{{ d }}]"
+                    data-pos="{{ pos.id }}"
+                    data-derivative="{{ d }}"
+                    value="0"
+                    min="0"
+                    disabled
+                    oninput="calculatePlantTotals()"
+                  />
+                </div>
+              </td>
+              {% endfor %}
+            </tr>
+            {% endfor %}
+            <tr>
+              <td><strong>Total (avg.) cars / a</strong></td>
+
+              {% for pos in positions %}
+              <td>
+                <input
+                  type="number"
+                  class="form-control plant-total"
+                  id="plant_total_{{ pos.id }}"
+                  data-pos="{{ pos.id }}"
+                  value="0"
+                  readonly
+                />
+              </td>
+              {% endfor %}
+            </tr>
+            <!--pos_plant_derivatives-->
+            <!--=========================-->
+            <tr class="table-secondary">
+              <td colspan="{{ positions|length + 1 }}">
+                <strong>Annual Quantities</strong>
+              </td>
+            </tr>
+
+            <!--Parts / Car Line 51-->
+            <tr>
+              <td>Parts / Car</td>
+              {% for pos in positions %}
+              <td>
+                <input
+                  type="number"
+                  name="parts_per_car[{{ pos.id }}]"
+                  class="form-control parts-per-car"
+                  data-pos="{{ pos.id }}"
+                />
+              </td>
+              {% endfor %}
+            </tr>
+
+            <!--Parts / Year (+/- 30%) Line 52-->
+            <tr>
+              <td>Parts / Year (+/- 30%)</td>
+              {% for pos in positions %}
+              <td>
+                <input
+                  type="number"
+                  name="parts_per_year[{{ pos.id }}]"
+                  class="form-control parts-per-year"
+                  data-pos="{{ pos.id }}"
+                  readonly
+                />
+              </td>
+              {% endfor %}
+            </tr>
+
+            <tr class="table-secondary">
+              <td colspan="{{ positions|length + 1 }}">
+                <strong>Comments</strong>
+              </td>
+            </tr>
+
+            <tr>
+              <td>Comments</td>
+              {% for pos in positions %}
+              <td>
+                <textarea
+                  name="comments[{{ pos.id }}]"
+                  class="form-control"
+                ></textarea>
+              </td>
+              {% endfor %}
+            </tr>
+
+            <tr class="table-primary section-main">
+              <td colspan="{{ positions|length + 1 }}">
+                <strong>1.2 Weight per Part</strong>
+              </td>
+            </tr>
+
+            <tr class="table-secondary section-sub">
+              <td colspan="{{ positions|length + 1 }}">
+                <strong>Material A</strong>
+              </td>
+            </tr>
+
+            <!--Material A-(Carrier)-->
+            <tr>
+              <td>Material A-(Carrier)</td>
+              {% for pos in positions %}
+              <td>
+                <select
+                  name="material_a[{{ pos.id }}]"
+                  class="form-control material-select"
+                  data-type="a"
+                  data-pos="{{ pos.id }}"
+                >
+                  <option value="">-- Select Material --</option>
+                  {% for m in materials_a %}
+                  <option
+                    value="{{ m.Material_A }}"
+                    data-density="{{ m.Density_kg_dm3 }}"
+                    data-price="{{ m.Price_per_kg_actual }}"
+                  >
+                    {{ m.Material_A }}
+                  </option>
+                  {% endfor %}
+                </select>
+              </td>
+              {% endfor %}
+            </tr>
+
+            <tr>
+              <td>Density (g/cm³)</td>
+              {% for pos in positions %}
+              <td>
+                <input
+                  type="number"
+                  step="0.00001"
+                  name="density_mat_a[{{ pos.id }}]"
+                  class="form-control density-input"
+                  data-type="a"
+                  data-pos="{{ pos.id }}"
+                  readonly
+                />
+              </td>
+              {% endfor %}
+            </tr>
+            <tr>
+              <td>Volume (cm³)</td>
+              {% for pos in positions %}
+              <td>
+                <input
+                  type="number"
+                  step="0.001"
+                  name="volume_mat_a[{{ pos.id }}]"
+                  class="form-control volume-input"
+                  data-type="a"
+                  data-pos="{{ pos.id }}"
+                />
+              </td>
+              {% endfor %}
+            </tr>
+
+            <!--Weigth / part Line 61-->
+            <tr>
+              <td>Weigth / part (g)</td>
+              {% for pos in positions %}
+              <td>
+                <input
+                  readonly
+                  name="weight_mat_a[{{ pos.id }}]"
+                  class="form-control weight-input"
+                  data-type="a"
+                  data-pos="{{ pos.id }}"
+                />
+              </td>
+              {% endfor %}
+            </tr>
+            <!-- ================= Material B ================= -->
+            <tr class="table-secondary section-sub">
+              <td colspan="{{ positions|length + 1 }}">
+                <strong>Material B</strong>
+              </td>
+            </tr>
+
+            <!--Material B - [Foam) -->
+            <tr>
+              <td>Material B - [Foam]</td>
+              {% for pos in positions %}
+              <td>
+                <select
+                  name="material_b[{{ pos.id }}]"
+                  class="form-control material-select"
+                  data-type="b"
+                  data-pos="{{ pos.id }}"
+                >
+                  <option value="">-- Select Material --</option>
+                  {% for m in materials_b %}
+                  <option
+                    value="{{ m.Material_B }}"
+                    data-density="{{ m.Density_kg_dm3 }}"
+                    data-price="{{ m.Price_per_kg_actual }}"
+                  >
+                    {{ m.Material_B }}
+                  </option>
+                  {% endfor %}
+                </select>
+              </td>
+              {% endfor %}
+            </tr>
+
+            <tr>
+              <td>Density (g/cm³)</td>
+              {% for pos in positions %}
+              <td>
+                <input
+                  type="number"
+                  step="0.00001"
+                  name="density_mat_b[{{ pos.id }}]"
+                  class="form-control density-input"
+                  data-type="b"
+                  data-pos="{{ pos.id }}"
+                  readonly
+                />
+              </td>
+              {% endfor %}
+            </tr>
+
+            <tr>
+              <td>Volume (cm³)</td>
+              {% for pos in positions %}
+              <td>
+                <input
+                  type="number"
+                  step="0.001"
+                  name="volume_mat_b[{{ pos.id }}]"
+                  class="form-control volume-input"
+                  data-type="b"
+                  data-pos="{{ pos.id }}"
+                />
+              </td>
+              {% endfor %}
+            </tr>
+
+            <!--Weigth / part-->
+            <tr>
+              <td>Weight (g)</td>
+              {% for pos in positions %}
+              <td>
+                <input
+                  readonly
+                  name="weight_mat_b[{{ pos.id }}]"
+                  class="form-control weight-input"
+                  data-type="b"
+                  data-pos="{{ pos.id }}"
+                />
+              </td>
+              {% endfor %}
+            </tr>
+            <!-- ================= Material C ================= -->
+            <tr class="table-secondary section-sub">
+              <td colspan="{{ positions|length + 1 }}">
+                <strong>Material C</strong>
+              </td>
+            </tr>
+            <tr>
+              <td>Material</td>
+              {% for pos in positions %}
+              <td>
+                <select
+                  name="material_c[{{ pos.id }}]"
+                  class="form-control material-select"
+                  data-type="c"
+                  data-pos="{{ pos.id }}"
+                >
+                  <option value="">-- Select Material --</option>
+                  {% for m in materials_c %}
+                  <option
+                    value="{{ m.Material_C }}"
+                    data-density="{{ m.Density_kg_dm3 }}"
+                  >
+                    {{ m.Material_C }}
+                  </option>
+                  {% endfor %}
+                </select>
+              </td>
+              {% endfor %}
+            </tr>
+            <tr>
+              <td>Density (g/cm³)</td>
+              {% for pos in positions %}
+              <td>
+                <input
+                  type="number"
+                  step="0.00001"
+                  name="density_mat_c[{{ pos.id }}]"
+                  class="form-control density-input"
+                  data-type="c"
+                  data-pos="{{ pos.id }}"
+                  readonly
+                />
+              </td>
+              {% endfor %}
+            </tr>
+            <tr>
+              <td>Volume (cm³)</td>
+              {% for pos in positions %}
+              <td>
+                <input
+                  type="number"
+                  step="0.001"
+                  name="volume_mat_c[{{ pos.id }}]"
+                  class="form-control volume-input"
+                  data-type="c"
+                  data-pos="{{ pos.id }}"
+                />
+              </td>
+              {% endfor %}
+            </tr>
+            <!--Weigth / part-->
+            <tr>
+              <td>Weight (g)</td>
+              {% for pos in positions %}
+              <td>
+                <input
+                  readonly
+                  name="weight_mat_c[{{ pos.id }}]"
+                  class="form-control weight-input"
+                  data-type="c"
+                  data-pos="{{ pos.id }}"
+                />
+              </td>
+              {% endfor %}
+            </tr>
+            <!-- ================= Material D ================= -->
+            <tr class="table-secondary section-sub">
+              <td colspan="{{ positions|length + 1 }}">
+                <strong>Material D</strong>
+              </td>
+            </tr>
+            <tr>
+              <td>Material</td>
+              {% for pos in positions %}
+              <td>
+                <input name="material_d[{{ pos.id }}]" class="form-control" />
+              </td>
+              {% endfor %}
+            </tr>
+            <!--Weigth / part-->
+            <tr>
+              <td>Weight (g)</td>
+              {% for pos in positions %}
+              <td>
+                <input
+                  type="number"
+                  step="0.001"
+                  name="weight_mat_d[{{ pos.id }}]"
+                  class="form-control weight-d"
+                  data-pos="{{ pos.id }}"
+                />
+              </td>
+              {% endfor %}
+            </tr>
+
+            <!-- ================= TOTAL Weight / Part (g)================= -->
+            <tr class="table-warning text-light">
+              <td><strong>Total Weight / Part (g)</strong></td>
+              {% for pos in positions %}
+              <td>
+                <input
+                  readonly
+                  name="total_weight[{{ pos.id }}]"
+                  class="form-control total-weight-part"
+                  data-pos="{{ pos.id }}"
+                />
+              </td>
+              {% endfor %}
+            </tr>
+            <!-- ================= Weight / car ================= -->
+            <tr class="table-secondary">
+              <td colspan="{{ positions|length + 1 }}">
+                <strong>Weight / Car</strong>
+              </td>
+            </tr>
+            <tr>
+              <td>Polyamide</td>
+              {% for pos in positions %}
+              <td>
+                <input
+                  name="polyamide_weight_per_car[{{ pos.id }}]"
+                  class="form-control polyamide"
+                  data-pos="{{ pos.id }}"
+                />
+              </td>
+              {% endfor %}
+            </tr>
+            <tr>
+              <td>Terophon / Terocore</td>
+              {% for pos in positions %}
+              <td>
+                <input
+                  name="terophon_terocore_weight_per_car[{{ pos.id }}]"
+                  class="form-control terophon"
+                  data-pos="{{ pos.id }}"
+                />
+              </td>
+              {% endfor %}
+            </tr>
+            <tr>
+              <td>Steel</td>
+              {% for pos in positions %}
+              <td>
+                <input
+                  name="steel_weight_per_car[{{ pos.id }}]"
+                  class="form-control steel"
+                  data-pos="{{ pos.id }}"
+                />
+              </td>
+              {% endfor %}
+            </tr>
+            <tr>
+              <td>Others</td>
+              {% for pos in positions %}
+              <td>
+                <input
+                  name="other_mat_weight_per_car[{{ pos.id }}]"
+                  class="form-control others"
+                  data-pos="{{ pos.id }}"
+                />
+              </td>
+              {% endfor %}
+            </tr>
+            <!-- ================= TOTAL Weight / Car (g)================= -->
+            <tr class="table-warning text-opacity-75 text-light">
+              <td><strong>Total Weight / Car (g)</strong></td>
+              {% for pos in positions %}
+              <td>
+                <input
+                  readonly
+                  name="total_weight_per_car[{{ pos.id }}]"
+                  class="form-control total-weight-car"
+                  data-pos="{{ pos.id }}"
+                />
+              </td>
+              {% endfor %}
+            </tr>
+
+            <tr class="table-primary section-main">
+              <td colspan="{{ positions|length + 1 }}">
+                <strong>1.3 Logistic Evaluation</strong>
+              </td>
+            </tr>
+            <tr class="table-secondary section-sub">
+              <td colspan="{{ positions|length + 1 }}">
+                <strong>Packaging Concept</strong>
+              </td>
+            </tr>
+
+            <!-- Type of box -->
+            <tr>
+              <td>Type of box</td>
+              {% for pos in positions %}
+              <td>
+                <select
+                  name="type_of_box[{{ pos.id }}]"
+                  class="form-control box-select"
+                  data-pos="{{ pos.id }}"
+                >
+                  <option value="">-- Select --</option>
+
+                  {% for b in type_of_box %}
+                  <option
+                    value="{{ b.id }}"
+                    data-code="{{ b.packaging_code }}"
+                    data-name="{{ b.packaging_name }}"
+                    data-l="{{ b.length_mm }}"
+                    data-w="{{ b.width_mm }}"
+                    data-h="{{ b.height_mm }}"
+                    data-weight="{{ b.weight_kg }}"
+                    data-volume="{{ b.volume_mm3 }}"
+                  >
+                    {{ b.packaging_code }} {{ b.packaging_name }}
+                  </option>
+                  {% endfor %}
+                </select>
+              </td>
+              {% endfor %}
+            </tr>
+
+            <!-- Box dimensions -->
+            <tr>
+              <td>Box dimensions (inside) [mm]</td>
+              {% for pos in positions %}
+              <td>
+                <input
+                  class="form-control box-dim"
+                  data-pos="{{ pos.id }}"
+                  name="box_dimensions[{{ pos.id }}]"
+                  readonly
+                />
+              </td>
+              {% endfor %}
+            </tr>
+
+            <!-- Box weight -->
+            <tr>
+              <td>Box weight [kg]</td>
+              {% for pos in positions %}
+              <td>
+                <input
+                  class="form-control box-weight"
+                  data-pos="{{ pos.id }}"
+                  name="box_weight[{{ pos.id }}]"
+                  readonly
+                />
+              </td>
+              {% endfor %}
+            </tr>
+
+            <!-- Box volume -->
+            <tr>
+              <td>Box volume [l]</td>
+              {% for pos in positions %}
+              <td>
+                <input
+                  class="form-control box-volume"
+                  data-pos="{{ pos.id }}"
+                  name="box_volume[{{ pos.id }}]"
+                  readonly
+                />
+              </td>
+              {% endfor %}
+            </tr>
+
+            <!--Bulk Factor-->
+            <tr>
+              <td>Bulk factor</td>
+              {% for pos in positions %}
+              <td>
+                <input
+                  type="number"
+                  class="form-control bulk-factor"
+                  data-pos="{{pos.id}}"
+                  name="bulk_factor[{{pos.id}}]"
+                />
+              </td>
+              {% endfor %}
+            </tr>
+
+            <!-- Number of parts/box calculated -->
+            <tr>
+              <td>Number of parts/box calculated</td>
+              {% for pos in positions %}
+              <td>
+                <input
+                  type="number"
+                  class="form-control parts-per-box-calc"
+                  data-pos="{{pos.id}}"
+                  name="parts_per_box_calc[{{pos.id}}]"
+                  readonly
+                />
+              </td>
+              {% endfor %}
+            </tr>
+
+            <!-- Number of parts/box defined -->
+            <tr>
+              <td>Number of parts/box defined</td>
+              {% for pos in positions %}
+              <td>
+                <input
+                  type="number"
+                  class="form-control parts-per-box-defined"
+                  data-pos="{{pos.id}}"
+                  name="parts_per_box_defined[{{pos.id}}]"
+                />
+              </td>
+              {% endfor %}
+            </tr>
+
+            <!-- Weight / unit red limit -->
+            <tr>
+              <td>Weight / unit red limit [kg]</td>
+              {% for pos in positions %}
+              <td>
+                <input
+                  type="number"
+                  class="form-control weight-unit-red-limit"
+                  data-pos="{{pos.id}}"
+                  name="weight_unit_red_limit[{{pos.id}}]"
+                  value="15"
+                />
+              </td>
+              {% endfor %}
+            </tr>
+            <!-- Weight / unit (red > limit) -->
+            <tr>
+              <td>Weight / unit (red > limit) 15 * [kg]</td>
+              {% for pos in positions %}
+              <td>
+                <input
+                  type="number"
+                  class="form-control weight-per-unit-kg"
+                  data-pos="{{pos.id}}"
+                  name="weight_per_unit_kg[{{pos.id}}]"
+                  readonly
+                />
+              </td>
+              {% endfor %}
+            </tr>
+
+            <tr class="table-secondary section-sub">
+              <td colspan="{{ positions|length + 1 }}">
+                <strong>Pallets</strong>
+              </td>
+            </tr>
+
+            <!-- Pallete Description -->
+            <tr>
+              <td>Pallet Description [mm]</td>
+              {% for pos in positions %}
+
+              <td>
+                <select
+                  name="pallet_description[{{ pos.id }}]"
+                  class="form-control pallet-description"
+                  data-pos="{{ pos.id }}"
+                >
+                  <option value="">-- Select --</option>
+
+                  {% for b in pallet_description %}
+                  <option value="{{ b.id }}" data-weight="{{ b.weight_kg }}">
+                    {{ b.palette_code }} {{ b.palette_name }}
+                  </option>
+                  {% endfor %}
+                </select>
+              </td>
+              {%endfor%}
+            </tr>
+
+            <!-- Top description -->
+            <tr>
+              <td>Top Description</td>
+              {% for pos in positions %}
+              <td>
+                <select
+                  name="top_description[{{ pos.id }}]"
+                  class="form-control top-description"
+                  data-pos="{{ pos.id }}"
+                >
+                  <option value="">-- Select --</option>
+
+                  {% for b in top_description %}
+                  <option value="{{ b.id }}" data-weight="{{ b.weight_kg }}">
+                    {{ b.deckel_code }} {{ b.deckel_name }}
+                  </option>
+                  {% endfor %}
+                </select>
+              </td>
+              {%endfor%}
+            </tr>
+
+            <!-- boxes / pallet -->
+            <tr>
+              <td>Boxes / pallet [pieces]</td>
+              {% for pos in positions %}
+              <td>
+                <input
+                  type="number"
+                  class="form-control boxes-per-pallet"
+                  data-pos="{{pos.id}}"
+                  name="boxes_per_pallet[{{pos.id}}]"
+                />
+              </td>
+              {%endfor%}
+            </tr>
+
+            <!-- parts / pallet -->
+            <tr>
+              <td>Parts / pallet [parts]</td>
+              {% for pos in positions %}
+              <td>
+                <input
+                  type="number"
+                  class="form-control parts-per-pallet"
+                  data-pos="{{pos.id}}"
+                  name="parts_per_pallet[{{pos.id}}]"
+                  readonly
+                />
+              </td>
+              {%endfor%}
+            </tr>
+
+            <!-- weight / pallet (gross) [kg] -->
+            <tr>
+              <td>Weight / pallet (gross) [kg]</td>
+              {% for pos in positions %}
+              <td>
+                <input
+                  type="number"
+                  class="form-control pallet-weight-gross-kg"
+                  data-pos="{{pos.id}}"
+                  name="pallet_weight_gross_kg[{{pos.id}}]"
+                  readonly
+                />
+              </td>
+              {%endfor%}
+            </tr>
+            <tr class="table-secondary section-sub">
+              <td colspan="{{ positions|length + 1 }}">
+                <strong>Monthly</strong>
+              </td>
+            </tr>
+
+            <!--parts / month-->
+            <tr>
+              <td>parts / month [parts]</td>
+              {% for pos in positions %}
+              <td>
+                <input
+                  type="number"
+                  class="form-control parts-per-month"
+                  data-pos="{{pos.id}}"
+                  name="parts_per_month[{{pos.id}}]"
+                  readonly
+                />
+              </td>
+              {%endfor%}
+            </tr>
+
+            <!--Boxes / month-->
+            <tr>
+              <td>Boxes / month [pieces]</td>
+              {% for pos in positions %}
+              <td>
+                <input
+                  type="number"
+                  class="form-control boxes-per-month"
+                  data-pos="{{pos.id}}"
+                  name="boxes_per_month[{{pos.id}}]"
+                  readonly
+                />
+              </td>
+              {%endfor%}
+            </tr>
+
+            <!--Pallets / month-->
+            <tr>
+              <td>Pallets / month [pieces]</td>
+              {% for pos in positions %}
+              <td>
+                <input
+                  type="number"
+                  class="form-control pallets-per-month"
+                  data-pos="{{pos.id}}"
+                  name="pallets_per_month[{{pos.id}}]"
+                  readonly
+                />
+              </td>
+              {%endfor%}
+            </tr>
+
+            <tr class="table-secondary section-sub">
+              <td colspan="{{ positions|length + 1 }}">
+                <strong>Lot Production</strong>
+              </td>
+            </tr>
+
+            <!-- Boxes requested for lot production -->
+            <tr>
+              <td>Boxes requested for lot production [pieces]</td>
+              {% for pos in positions %}
+              <td>
+                <input
+                  type="number"
+                  class="form-control boxes-lot"
+                  data-pos="{{pos.id}}"
+                  name="boxes_lot[{{pos.id}}]"
+                />
+              </td>
+              {%endfor%}
+            </tr>
+
+            <!-- Pallets requested for lot production -->
+            <tr>
+              <td>Pallets requested for lot production [pieces]</td>
+              {% for pos in positions %}
+              <td>
+                <input
+                  type="number"
+                  class="form-control pallets-lot"
+                  data-pos="{{pos.id}}"
+                  name="pallets_lot[{{pos.id}}]"
+                  readonly
+                />
+              </td>
+              {% endfor %}
+            </tr>
+
+            <!--Production lot-->
+            <tr>
+              <td>Production lot [parts]</td>
+              {% for pos in positions %}
+              <td>
+                <input
+                  type="number"
+                  class="form-control production-lot-parts"
+                  data-pos="{{pos.id}}"
+                  name="production_lot_parts[{{pos.id}}]"
+                  readonly
+                />
+              </td>
+              {% endfor %}
+            </tr>
+
+            <!--Number of production runs / year-->
+            <tr>
+              <td>Number of production runs / year</td>
+              {% for pos in positions %}
+              <td>
+                <input
+                  type="number"
+                  class="form-control production-runs-per-year"
+                  data-pos="{{pos.id}}"
+                  name="production_runs_per_year[{{pos.id}}]"
+                  readonly
+                />
+              </td>
+              {% endfor %}
+            </tr>
+
+            <tr class="table-secondary section-sub">
+              <td colspan="{{ positions|length + 1 }}">
+                <strong>Orders</strong>
+              </td>
+            </tr>
+
+            <!--Pallets min. order quantity-->
+            <tr>
+              <td>Pallets min. order quantity [pieces]</td>
+              {% for pos in positions %}
+              <td>
+                <input
+                  type="number"
+                  class="form-control pallets-min-order-qty"
+                  data-pos="{{pos.id}}"
+                  name="pallets_min_order_qty[{{pos.id}}]"
+                />
+              </td>
+              {% endfor %}
+            </tr>
+
+            <!--Parts min. order quantity-->
+            <tr>
+              <td>Parts min. order quantity [pieces]</td>
+              {% for pos in positions %}
+              <td>
+                <input
+                  type="number"
+                  class="form-control parts-min-order-qty"
+                  data-pos="{{pos.id}}"
+                  name="parts_min_order_qty[{{pos.id}}]"
+                  readonly
+                />
+              </td>
+              {% endfor %}
+            </tr>
+
+            <!--=================== Section 2 ==========================-->
+            <tr class="table-primary section-main">
+              <td colspan="{{positions|length+1}}">
+                <strong>2.1 Tool Layout - Material A (or 2K)</strong>
+              </td>
+            </tr>
+
+            <!-- all Material A rows -->
+            <tbody class="material-section" data-material="A">
+              <!-- Projected Area -->
+              <tr>
+                <td>Projected Area [cm²]</td>
+                {% for pos in positions %}
+                <td>
+                  <input
+                    type="number"
+                    class="form-control projected-area"
+                    data-pos="{{pos.id}}"
+                    name="projected_area[A][{{pos.id}}]"
+                    step="any"
+                  />
+                </td>
+                {% endfor %}
+              </tr>
+
+              <!--Min clamping force per part (500bar) [t / pc.]-->
+              <tr>
+                <td>Min Clamping Force Per Part (500bar) [t / pc.]</td>
+                {% for pos in positions %}
+                <td>
+                  <input
+                    type="number"
+                    class="form-control min-clamping-per-part"
+                    data-pos="{{pos.id}}"
+                    name="min_clamping_per_part[A][{{pos.id}}]"
+                    step="any"
+                    readonly
+                  />
+                </td>
+                {% endfor %}
+              </tr>
+
+              <!-- Max Dimensions L x B x H [mm]-->
+              <tr>
+                <td>Max Dimensions L × B × H [mm]</td>
+                {% for pos in positions %}
+                <td>
+                  <div class="d-flex gap-1">
+                    <input
+                      type="number"
+                      class="form-control form-control-sm"
+                      name="max_dim_l[A][{{pos.id}}]"
+                      placeholder="L"
+                      min="0"
+                    />
+
+                    <input
+                      type="number"
+                      class="form-control form-control-sm"
+                      name="max_dim_b[A][{{pos.id}}]"
+                      placeholder="B"
+                      min="0"
+                    />
+
+                    <input
+                      type="number"
+                      class="form-control form-control-sm"
+                      name="max_dim_h[A][{{pos.id}}]"
+                      placeholder="H"
+                      min="0"
+                    />
+                  </div>
+                </td>
+                {% endfor %}
+              </tr>
+
+              <!-- Tool & Machine Nr -->
+              <tr class="table-secondary section-sub">
+                <td colspan="{{ (positions|length if positions else 1) + 1 }}">
+                  <strong>Tool & Machine Nr.</strong>
+                </td>
+              </tr>
+
+              <!-- Tool Codes or tool nr -->
+              <tr>
+                <td>Tool Codes</td>
+                {% for pos in positions %}
+                <td>
+                  <input
+                    type="text"
+                    class="form-control tool-code-mat-a"
+                    data-pos="{{ pos.id }}"
+                    name="tool_code[A][{{ pos.id }}]"
+                    readonly
+                  />
+                </td>
+                {% endfor %}
+              </tr>
+
+              <!-- Machine Dropdown -->
+              <tr>
+                <td>Machine Nr.</td>
+                {% for pos in positions %}
+                <td>
+                  <select
+                    name="tool_machine[A][{{ pos.id }}]"
+                    class="form-select form-select-sm machine-select"
+                    data-pos="{{ pos.id }}"
+                  >
+                    <option value="">-</option>
+                    {% for m in machines %}
+                    <option 
+                      value="{{ m.id }}"
+                      data-machine-rate="{{m.machine_rate_per_hour}}"
+                    >
+                      {{ m.machine_title }}
+                    </option>
+                    {% endfor %}
+                  </select>
+                </td>
+                {% endfor %}
+              </tr>
+
+              <!-- Machine Nr. Value -->
+              <tr>
+                <td>Machine Nr. Value</td>
+                {% for pos in positions %}
+                <td>
+                  <input
+                    type="number"
+                    class="form-control machine-nr-value-a"
+                    data-pos="{{ pos.id }}"
+                    name="machine_nr_value[A][{{ pos.id }}]"
+                  />
+                </td>
+                {% endfor %}
+              </tr>
+
+              <tr class="table-secondary section-sub">
+                <td colspan="{{ (positions|length if positions else 1) + 1 }}">
+                  <strong>2.1.1 Tooling Cost Material A</strong>
+                </td>
+              </tr>
+
+              <!--Material (prorated per part nr.)-->
+              <tr>
+                <td>Material (prorated per part nr.)</td>
+                {% for pos in positions %}
+                <td>
+                  <input
+                    type="number"
+                    class="form-control material-a-prorated"
+                    data-pos="{{pos.id}}"
+                    name="material_a_prorated[A][{{pos.id}}]"
+                  />
+                </td>
+                {% endfor %}
+              </tr>
+
+              <!--Manufacturing (prorated per part nr.)-->
+              <tr>
+                <td>Manufacturing (prorated per part nr.)</td>
+                {% for pos in positions %}
+                <td>
+                  <input
+                    type="number"
+                    class="form-control manufacturing-a-prorated"
+                    data-pos="{{pos.id}}"
+                    name="manufacturing_a_prorated[A][{{pos.id}}]"
+                  />
+                </td>
+                {% endfor %}
+              </tr>
+
+              <!--Construction (prorated per part nr.)-->
+              <tr>
+                <td>Construction (prorated per part nr.)</td>
+                {% for pos in positions %}
+                <td>
+                  <input
+                    type="number"
+                    class="form-control construction-a-prorated"
+                    data-pos="{{pos.id}}"
+                    name="construction_a_prorated[A][{{pos.id}}]"
+                  />
+                </td>
+                {% endfor %}
+              </tr>
+
+              <!--Service & Overhead (prorated per part nr.)-->
+              <tr>
+                <td>Service & Overhead (prorated per part nr.)</td>
+                {% for pos in positions %}
+                <td>
+                  <input
+                    type="number"
+                    class="form-control service-overhead-a-prorated"
+                    data-pos="{{pos.id}}"
+                    name="service_overhead_a_prorated[A][{{pos.id}}]"
+                  />
+                </td>
+                {% endfor %}
+              </tr>
+
+              <!--Mould investment -->
+              <tr class="table-warning">
+                <td class="row-head">Mould investment (prorated per part nr.)</td>
+                {% for pos in positions %}
+                <td class="row-data-inputs">
+                  <input
+                    type="number"
+                    class="form-control mould-investment-a-prorated"
+                    data-pos="{{pos.id}}"
+                    name="mould_investment_a_prorated[A][{{pos.id}}]"
+                    readonly
+                    step="any"
+                  />
+                </td>
+                {% endfor %}
+              </tr>
+
+            </tbody>
+
+            <!-- all Material B rows -->
+             <tr class="table-primary section-main">
+              <td colspan="{{positions|length+1}}">
+                <strong>2.2 Tool Layout - Material B</strong>
+              </td>
+            </tr>
+
+            <tbody class="material-section" data-material="B">
+               <!-- Projected Area-->
+              <tr>
+                <td>Projected Area [cm²]</td>
+                {% for pos in positions %}
+                <td>
+                  <input
+                    type="number"
+                    class="form-control projected-area"
+                    data-pos="{{pos.id}}"
+                    name="projected_area[B][{{pos.id}}]"
+                    step="any"
+                  />
+                </td>
+                {% endfor %}
+              </tr>
+
+              <!-- min. clamping force per part (400bar) -->
+              <tr>
+                <td>Min Clamping Force Per Part (400 bar) [t/pc.]</td>
+                {% for pos in positions%}
+                <td>
+                  <input
+                  type="number"
+                  class="form-control min-clamping-per-part"
+                  data-pos="{{pos.id}}"
+                  name="min_clamping_per_part[B][{{pos.id}}]"
+                  step="any"
+                  readonly
+                />
+                </td>
+                {% endfor %}
+              </tr>
+
+              <!-- Max Dimensions L x B x H [mm]-->
+              <tr>
+                <td>Max Dimensions L × B × H [mm]</td>
+                {% for pos in positions %}
+                <td>
+                  <div class="d-flex gap-1">
+                    <input
+                      type="number"
+                      class="form-control form-control-sm"
+                      name="max_dim_l[B][{{pos.id}}]"
+                      placeholder="L"
+                      min="0"
+                    />
+
+                    <input
+                      type="number"
+                      class="form-control form-control-sm"
+                      name="max_dim_b[B][{{pos.id}}]"
+                      placeholder="B"
+                      min="0"
+                    />
+
+                    <input
+                      type="number"
+                      class="form-control form-control-sm"
+                      name="max_dim_h[B][{{pos.id}}]"
+                      placeholder="H"
+                      min="0"
+                    />
+                  </div>
+                </td>
+                {% endfor %}
+              </tr>
+
+              <!-- Tool & Machine Nr -->
+              <tr class="table-secondary section-sub">
+                <td colspan="{{ (positions|length if positions else 1) + 1 }}">
+                  <strong>Tool & Machine Nr.</strong>
+                </td>
+              </tr>
+
+              <!-- Tool Codes -->
+              <tr>
+                <td>Tool Codes</td>
+                {% for pos in positions %}
+                <td>
+                  <input
+                    type="text"
+                    class="form-control tool-code-mat-b"
+                    data-pos="{{ pos.id }}"
+                    name="tool_code[B][{{ pos.id }}]"
+                    readonly
+                  />
+                </td>
+                {% endfor %}
+              </tr>
+
+              <!-- Machine Dropdown -->
+              <tr>
+                <td>Machine Nr.</td>
+                {% for pos in positions %}
+                <td>
+                  <select
+                    name="tool_machine[B][{{ pos.id }}]"
+                    class="form-select form-select-sm machine-select-b"
+                    data-pos="{{ pos.id }}"
+                    
+                  >
+                    <option value="">-</option>
+                    {% for m in machines %}
+                    <option value="{{ m.id }}" data-machine-rate="{{m.machine_rate_per_hour}}">
+                      {{ m.machine_nr }} {{ m.machine_title }}
+                    </option>
+                    {% endfor %}
+                  </select>
+                </td>
+                {% endfor %}
+              </tr>
+
+              <!-- Machine Nr. Value -->
+              <tr>
+                <td>Machine Nr. Value</td>
+                {% for pos in positions %}
+                <td>
+                  <input
+                    type="number"
+                    class="form-control machine-nr-value-b"
+                    data-pos="{{ pos.id }}"
+                    name="machine_nr_value[B][{{ pos.id }}]"
+                  />
+                </td>
+                {% endfor %}
+              </tr>
+
+              <tr class="table-secondary section-sub">
+                <td colspan="{{ (positions|length if positions else 1) + 1 }}">
+                  <strong>2.2.1 Tooling Cost Material B</strong>
+                </td>
+              </tr>
+
+              <!--Material (prorated per part nr.)-->
+              <tr>
+                <td>Material (prorated per part nr.)</td>
+                {% for pos in positions %}
+                <td>
+                  <input
+                    type="number"
+                    class="form-control material-b-prorated"
+                    data-pos="{{pos.id}}"
+                    name="material_b_prorated[B][{{pos.id}}]"
+                  />
+                </td>
+                {% endfor %}
+              </tr>
+
+              <!--Manufacturing (prorated per part nr.)-->
+              <tr>
+                <td>Manufacturing (prorated per part nr.)</td>
+                {% for pos in positions %}
+                <td>
+                  <input
+                    type="number"
+                    class="form-control manufacturing-b-prorated"
+                    data-pos="{{pos.id}}"
+                    name="manufacturing_b_prorated[B][{{pos.id}}]"
+                  />
+                </td>
+                {% endfor %}
+              </tr>
+
+              <!--Construction (prorated per part nr.)-->
+              <tr>
+                <td>Construction (prorated per part nr.)</td>
+                {% for pos in positions %}
+                <td>
+                  <input
+                    type="number"
+                    class="form-control construction-b-prorated"
+                    data-pos="{{pos.id}}"
+                    name="construction_b_prorated[B][{{pos.id}}]"
+                  />
+                </td>
+                {% endfor %}
+              </tr>
+
+              <!--Service & Overhead (prorated per part nr.)-->
+              <tr>
+                <td>Service & Overhead (prorated per part nr.)</td>
+                {% for pos in positions %}
+                <td>
+                  <input
+                    type="number"
+                    class="form-control service-overhead-b-prorated"
+                    data-pos="{{pos.id}}"
+                    name="service_overhead_b_prorated[B][{{pos.id}}]"
+                  />
+                </td>
+                {% endfor %}
+              </tr>
+
+              <!--Mould investment (prorated per part nr.)-->
+              <tr class="table-warning">
+                <td class="row-head">Mould investment (prorated per part nr.)</td>
+                {% for pos in positions %}
+                <td class="row-data-inputs">
+                  <input
+                    type="number"
+                    class="form-control mould-investment-b-prorated"
+                    data-pos="{{pos.id}}"
+                    name="mould_investment_b_prorated[B][{{pos.id}}]"
+                    readonly
+                    step="any"
+                  />
+                </td>
+                {% endfor %}
+              </tr>
+            </tbody>
+
+            <!--2.3 all Material C/D rows-->
+            <tr class="table-primary section-main">
+              <td colspan="{{positions|length+1}}">
+                <strong>2.3 Tool Layout - Material C/D</strong>
+              </td>
+            </tr>
+
+            <tbody class="material-section" data-material="C">
+              <!--Comments-->
+              <tr>
+                <td>Comments</td>
+                {% for pos in positions %}
+                <td>
+                  <textarea
+                    name="comments[CD][{{ pos.id }}]"
+                    class="form-control comments-cd"
+                  ></textarea>
+                </td>
+                {% endfor %}
+              </tr>
+
+              <tr class="table-secondary section-sub">
+                <td colspan="{{ (positions|length if positions else 1) + 1 }}">
+                  <strong>2.3.1 Tooling Cost Material C</strong>
+                </td>
+              </tr>
+
+              <!--Material (prorated per part nr.)-->
+              <tr>
+                <td>Material (prorated per part nr.)</td>
+                {% for pos in positions %}
+                <td>
+                  <input
+                    type="number"
+                    class="form-control material-c-prorated"
+                    data-pos="{{pos.id}}"
+                    name="material_c_prorated[C][{{pos.id}}]"
+                  />
+                </td>
+                {% endfor %}
+              </tr>
+
+              <!--Manufacturing (prorated per part nr.)-->
+              <tr>
+                <td>Manufacturing (prorated per part nr.)</td>
+                {% for pos in positions %}
+                <td>
+                  <input
+                    type="number"
+                    class="form-control manufacturing-c-prorated"
+                    data-pos="{{pos.id}}"
+                    name="manufacturing_c_prorated[C][{{pos.id}}]"
+                  />
+                </td>
+                {% endfor %}
+              </tr>
+
+              <!--Construction (prorated per part nr.)-->
+              <tr>
+                <td>Construction (prorated per part nr.)</td>
+                {% for pos in positions %}
+                <td>
+                  <input
+                    type="number"
+                    class="form-control construction-c-prorated"
+                    data-pos="{{pos.id}}"
+                    name="construction_c_prorated[C][{{pos.id}}]"
+                  />
+                </td>
+                {% endfor %}
+              </tr>
+
+              <!--Service & Overhead (prorated per part nr.)-->
+              <tr>
+                <td>Service & Overhead (prorated per part nr.)</td>
+                {% for pos in positions %}
+                <td>
+                  <input
+                    type="number"
+                    class="form-control service-overhead-c-prorated"
+                    data-pos="{{pos.id}}"
+                    name="service_overhead_c_prorated[C][{{pos.id}}]"
+                  />
+                </td>
+                {% endfor %}
+              </tr>
+
+              <!--Mould investment (prorated per part nr.)-->
+              <tr class="table-warning">
+                <td class="row-head">Mould investment (prorated per part nr.)</td>
+                {% for pos in positions %}
+                <td class="row-data-inputs">
+                  <input
+                    type="number"
+                    class="form-control mould-investment-c-prorated"
+                    data-pos="{{pos.id}}"
+                    name="mould_investment_c_prorated[C][{{pos.id}}]"
+                    readonly
+                    step="any"
+                  />
+                </td>
+                {% endfor %}
+              </tr>
+            </tbody>
+            
+            <!--2.4 Total Tooling Cost-->
+            <tr class="table-primary section-main">
+              <td colspan="{{positions|length+1}}">
+                <strong>2.4 Total Tooling Cost</strong>
+              </td>
+            </tr>
+
+            <!--Total mould investment (prorated per part nr.)-->
+            <tr class="table-warning">
+              <td>Total Mould Investment (prorated per part nr.)</td>
+              {% for pos in positions %}
+              <td>
+                <input
+                  type="number"
+                  class="form-control total-mould-investment"
+                  data-pos="{{pos.id}}"
+                  name="total_mould_investment[{{pos.id}}]"
+                  readonly
+                />
+              </td>
+              {% endfor %}
+            </tr>
+
+            <!--End of arm tooling or gripper cost (prorated per part nr.)-->
+            <tr>
+              <td>End of arm tooling or gripper cost (prorated per part nr.)</td>
+              {% for pos in positions%} 
+              <td>
+                <input 
+                type="number"
+                class="form-control end-of-arm-tooling-or-gripper-cost"
+                data-pos="{{pos.id}}"
+                name="end_of_arm_tooling_or_gripper_cost[{{pos.id}}]"
+                />
+              </td>
+              {% endfor %}
+            </tr>
+            
+            <!--Total investment (prorated per part nr.)-->
+            <tr class="table-warning">
+              <td>Total investment (prorated per part nr.)</td>
+              {% for pos in positions %}
+              <td>
+                <input
+                  type="number"
+                  class="form-control total-investment"
+                  data-pos="{{pos.id}}"
+                  name="total_investment[{{pos.id}}]"
+                  readonly
+                />
+              </td>
+              {% endfor %}
+            </tr>
+                 
+            <!--===========================Section 3===============================-->
+            <!-- 3.1 Component A Cost-->
+             <tr class="table-primary section-main">
+              <td colspan="{{positions|length+1}}">
+                <strong>3.1 Component A Cost</strong>
+              </td>
+             </tr>
+
+            <!-- 3.1.1 Material Cost-->
+             <tr class="table-secondary section-sub">
+              <td colspan="{{ positions|length + 1 }}">
+                <strong>3.1.1 Material Cost</strong>
+              </td>
+             </tr>
+
+             <!--Material A Cost-->
+             <tr>
+              <td>Material A Cost [EUR/Part]</td>
+              {% for pos in positions%} 
+              <td>
+                <input 
+                type="number"
+                class="form-control _3-1-1-material-a-cost"
+                data-pos="{{pos.id}}"
+                name="_3_1_1_material_a_cost[{{pos.id}}]"
+                readonly
+                />
+              </td>
+              {% endfor %}
+             </tr>
+
+             <!--Material A indirect cost [%]-->
+             <tr>
+              <td>Material A indirect cost [%]</td>
+              {% for pos in positions %} 
+              <td>
+                <input 
+                type="number"
+                class="form-control _3-1-1-material-a-indirect-cost"
+                data-pos="{{pos.id}}"
+                name="_3_1_1_material_a_indirect_cost[{{pos.id}}]"
+                />
+              </td>
+              {% endfor %}
+             </tr>
+
+             <!--Material A total cost-->
+             <tr class="table-warning">
+              <td>Material A total cost [EUR/Part]</td>
+              {% for pos in positions%} 
+              <td>
+                <input 
+                type="number"
+                class="form-control _3-1-1-material-a-total-cost"
+                data-pos="{{pos.id}}"
+                name="_3_1_1_material_a_total_cost[{{pos.id}}]"
+                readonly
+                />
+              </td>
+              {% endfor %}
+             </tr>
+
+             <!--3.1.2 Production Cost (1K/2K/1K+1K)-->
+             <tr class="table-secondary section-sub">
+              <td colspan="{{positions|length+1}}">
+                <strong>3.1.2 Production Cost (1K/2K/1K+1K)</strong>
+              </td>
+             </tr>
+
+             <!--Machine-->
+             <tr>
+              <td>Machine</td>
+              {% for pos in positions %}
+              <td>
+                <input 
+                type="text"
+                class="form-control _3-1-2-machine"
+                data-pos="{{pos.id}}"
+                name="_3_1_2_machine[{{pos.id}}]"
+                readonly
+                />
+              </td>
+              {% endfor %}
+             </tr>
+
+             <!--Tool Nr.-->
+             <tr>
+              <td>Tool Nr.</td>
+              {% for pos in positions %}
+              <td>
+                <input 
+                type="text" 
+                class="form-control _3-1-2-tool-nr" 
+                data-pos="{{pos.id}}" 
+                name="_3_1_2_tool_nr[{{pos.id}}]" 
+                readonly
+                />
+              </td>
+              {% endfor %}
+             </tr>
+
+             <!--Number production runs per year-->
+             <tr>
+              <td>Number production runs per year</td>
+              {% for pos in positions %}
+              <td>
+                <input 
+                type="number" 
+                class="form-control _3-1-2-num-of-production-runs-per-year" 
+                data-pos="{{pos.id}}" 
+                name="_3_1_2_num_of_production_runs_per_year[{{pos.id}}]" 
+                readonly
+                />
+              </td>
+              {% endfor %}
+             </tr>
+
+             <!--Number of finished parts per cycle and tool-->
+             <tr>
+              <td>Number of finished parts per cycle and tool</td>
+              {% for pos in positions %}
+              <td>
+                <input 
+                type="number" 
+                class="form-control _3-1-2-num-of-finished-parts-per-cycle-tool" 
+                data-pos="{{pos.id}}" 
+                name="_3_1_2_num_of_finished_parts_per_cycle_tool[{{pos.id}}]" 
+                readonly
+                />
+              </td>
+              {% endfor %}
+             </tr>
+
+             <!--Number of finished parts per cycle and part-nr.-->
+             <tr>
+              <td>Number of finished parts per cycle and part-nr.</td>
+              {% for pos in positions %}
+              <td>
+                <input 
+                type="number" 
+                class="form-control _3-1-2-num-of-finished-parts-per-cycle-part-nr" 
+                data-pos="{{pos.id}}" 
+                name="_3_1_2_num_of_finished_parts_per_cycle_part_nr[{{pos.id}}]"
+                readonly 
+                />
+              </td>
+              {% endfor %}
+             </tr>
+
+             <!--Start up and phase out time per production run -->
+             <tr>
+              <td>Start up and phase out time per production run  [h]</td>
+              {% for pos in positions %}
+              <td>
+                <input 
+                type="number" 
+                class="form-control _3-1-2-startup-phaseout-time-per-production" 
+                data-pos="{{pos.id}}" 
+                name="_3_1_2_startup_phaseout_time_per_production[{{pos.id}}]" 
+                />
+              </td>
+              {% endfor %}
+             </tr>
+
+             <!--Cycle time-->
+             <tr>
+              <td>Cycle time [s]</td>
+              {% for pos in positions %}
+              <td>
+                <input 
+                type="number" 
+                class="form-control _3-1-2-cycle-time" 
+                data-pos="{{pos.id}}" 
+                name="_3_1_2_cycle_time[{{pos.id}}]" 
+                />
+              </td>
+              {% endfor %}
+             </tr>
+
+             <!--Additional downtime or breakdowns-->
+             <tr>
+              <td>Additional downtime or breakdowns  [%]</td>
+              {% for pos in positions %}
+              <td>
+                <input 
+                type="number" 
+                class="form-control _3-1-2-downtime-breakdowns" 
+                data-pos="{{pos.id}}" 
+                name="_3_1_2_downtime_breakdowns[{{pos.id}}]" 
+                />
+              </td>
+              {% endfor %}
+             </tr>
+
+             <!--Total waste rate-->
+             <tr>
+              <td>Total waste rate [%]</td>
+              {% for pos in positions %}
+              <td>
+                <input 
+                type="number" 
+                class="form-control _3-1-2-total-waste-rate" 
+                data-pos="{{pos.id}}" 
+                name="_3_1_2_total_waste_rate[{{pos.id}}]" 
+                />
+              </td>
+              {% endfor %}
+             </tr>
+
+             <!--Number of parts per production run / Production lot-->
+             <tr>
+              <td>Number of parts per production run / Production lot</td>
+              {% for pos in positions %}
+              <td>
+                <input 
+                type="number" 
+                class="form-control _3-1-2-num-of-parts-per-production-lot" 
+                data-pos="{{pos.id}}" 
+                name="_3_1_2_num_of_parts_per_production_lot[{{pos.id}}]" 
+                readonly
+                />
+              </td>
+              {% endfor %}
+             </tr>
+
+             <!--Duration of production run (per part-nr.)-->
+             <tr>
+              <td>Duration of production run (per part-nr.)  [h]</td>
+              {% for pos in positions %}
+              <td>
+                <input 
+                type="number" 
+                class="form-control _3-1-2-duration-production-run" 
+                data-pos="{{pos.id}}" 
+                name="_3_1_2_duration_of_production_run[{{pos.id}}]"
+                readonly 
+                />
+              </td>
+              {% endfor %}
+             </tr>
+
+             <!--Annual machine time (per part-nr.)-->
+             <tr>
+              <td>Annual machine time (per part-nr.)  [h]</td>
+              {% for pos in positions %}
+              <td>
+                <input 
+                type="number" 
+                class="form-control _3-1-2-annual-machine-time" 
+                data-pos="{{pos.id}}" 
+                name="_3_1_2_annual_machine_time[{{pos.id}}]"
+                readonly 
+                />
+              </td>
+              {% endfor %}
+             </tr>
+
+             <!--Shots per hour (eff.)-->
+             <tr>
+              <td>Shots per hour (eff.)  [1/h] </td>
+              {% for pos in positions %}
+              <td>
+                <input 
+                type="number" 
+                class="form-control _3-1-2-shots-per-hour" 
+                data-pos="{{pos.id}}" 
+                name="_3_1_2_shots_per_hour[{{pos.id}}]"
+                readonly 
+                />
+              </td>
+              {% endfor %}
+             </tr>
+
+             <!--Machine rate-->
+             <tr>
+              <td>Machine rate [EUR/h]</td>
+              {% for pos in positions %}
+              <td>
+                <input 
+                  type="number" 
+                  class="form-control _3-1-2-machine-rate" 
+                  data-pos="{{pos.id}}" 
+                  name="_3_1_2_machine_rate[{{pos.id}}]"
+                  readonly
+                />
+              </td>
+              {% endfor %}
+             </tr>
+
+             <!--Production Mat. A indirect cost -->
+             <tr>
+              <td>Production Mat. A indirect cost [%]</td>
+              {% for pos in positions %}
+              <td>
+                <input 
+                  type="number" 
+                  class="form-control _3-1-2-production-mat-a-indirect-cost" 
+                  data-pos="{{pos.id}}" 
+                  name="_3_1_2_production_mat_a_indirect_cost[{{pos.id}}]" 
+                />
+              </td>
+              {% endfor %}
+             </tr>
+
+             <!--Production cost per part-->
+             <tr class="table-warning">
+              <td>Production cost per part [EUR]</td>
+              {% for pos in positions %}
+              <td>
+                <input 
+                type="number" 
+                class="form-control _3-1-2-production-cost-per-part" 
+                data-pos="{{pos.id}}" 
+                name="_3_1_2_production_cost_per_part[{{pos.id}}]" 
+                readonly
+                />
+              </td>
+              {% endfor %}
+             </tr>
+
+             <!--3.1.3 LABOUR COST (1K / 2K / 1K+1K)-->
+             <tr class="table-secondary section-sub">
+              <td colspan="{{positions|length+1}}">
+                <strong>3.1.3 LABOUR COST (1K / 2K / 1K+1K)</strong>
+              </td>
+             </tr>
+
+             <!--Personnel employment during production-->
+             <tr>
+              <td>Personnel employment during production [%]</td>
+              {% for pos in positions %} 
+              <td>
+                <input 
+                  type="number"
+                  class="form-control _3-1-3-personnel-employment-during-production"
+                  data-pos="{{pos.id}}" 
+                  name="_3_1_3_personnel_employment_during_production[{{pos.id}}]"
+                />
+              </td>
+              {% endfor %}
+             </tr>
+
+             <!--Labour cost -->
+             <tr>
+              <td>Labour cost</td>
+              {% for pos in positions %}
+              <td>
+                <input 
+                  type="number"
+                  class="form-control _3-1-3-labour-cost" 
+                  data-pos="{{pos.id}}"
+                  name="_3_1_3_labour_cost[{{pos.id}}]"
+                  readonly
+                />
+              </td>
+              {% endfor %}
+             </tr>
+
+             <!--Labour setup cost (100%)-->
+             <tr>
+              <td>Labour setup cost (100%)</td>
+              {% for pos in positions %}
+              <td>
+                <input 
+                  type="number"
+                  class="form-control _3-1-3-Labour-setup-cost" 
+                  data-pos="{{pos.id}}"
+                  name="_3_1_3_Labour_setup_cost[{{pos.id}}]"
+                  readonly
+                />
+              </td>
+              {% endfor %}
+             </tr>
+
+             <!--Labour indirect cost-->
+             <tr>
+              <td>Labour indirect cost [%]</td>
+              {% for pos in positions %}
+              <td>
+                <input 
+                  type="number"
+                  class="form-control _3-1-3-Labour-indirect-cost" 
+                  data-pos="{{pos.id}}"
+                  name="_3_1_3_Labour_indirect_cost[{{pos.id}}]" 
+                />
+              </td>
+              {% endfor %}
+             </tr>
+
+             <!--Labour cost per part-->
+             <tr class="table-warning">
+              <td>Labour cost per part [EUR]</td>
+              {% for pos in positions %}
+              <td>
+                <input 
+                  type="number"
+                  class="form-control _3-1-3-Labour-cost-per-part" 
+                  data-pos="{{pos.id}}"
+                  name="_3_1_3_Labour_cost_per_part[{{pos.id}}]"
+                  readonly 
+                />
+              </td>
+              {% endfor %}
+             </tr>
+
+            <!-- =========3.2 Component B Cost==========-->
+            <tr class="table-primary section-main">
+             <td colspan="{{positions|length+1}}">
+               <strong>3.2 Component B Cost</strong>
+             </td>
+            </tr>
+
+            <!-- 3.2.1 MATERIAL COST (1K / 2K / 1K+1K)-->
+             <tr class="table-secondary section-sub">
+              <td colspan="{{ positions|length + 1 }}">
+                <strong>3.2.1 MATERIAL COST (1K / 2K / 1K+1K)</strong>
+              </td>
+             </tr>
+             
+             <!-- Material B cost -->
+             <tr>
+              <td>Material B cost [EUR/Part]</td>
+              {% for pos in positions %}
+              <td>  
+                <input 
+                  type="number"
+                  class="form-control _3-2-1-material-b-cost"
+                  data-pos="{{pos.id}}" 
+                  name="_3_2_1_material_b_cost[{{pos.id}}]"
+                  readonly 
+                />
+              </td>
+              {% endfor %}
+             </tr>
+
+             <!--Material B indirect cost-->
+             <tr>
+              <td>Material B indirect cost</td>
+              {% for pos in positions %}
+              <td>
+                <input 
+                  type="number" 
+                  class="form-control _3-2-1-material-b-indirect-cost"
+                  data-pos="{{pos.id}}"
+                  name="_3_2_1_material_b_indirect_cost[{{pos.id}}]" 
+                />
+              </td>
+              {% endfor %}
+             </tr>
+
+             <!--Material B total cost-->
+             <tr class="table-warning">
+              <td>Material B Total Cost</td>
+              {% for pos in positions %}
+              <td>
+                <input 
+                  type="number"
+                  step="any" 
+                  class="form-control _3-2-1-material-b-total-cost"
+                  data-pos="{{pos.id}}"
+                  name="_3_2_1_material_b_total_cost[{{pos.id}}]" 
+                />
+              </td>
+              {% endfor %}
+             </tr>
+
+             <!-- 3.2.2 PRODUCTION COST (1K)-->
+             <tr class="table-secondary section-sub">
+              <td colspan="{{ positions|length + 1 }}">
+                <strong>3.2.2 PRODUCTION COST (1K)</strong>
+              </td>
+             </tr>
+
+             <!--Machine-->
+             <tr>
+              <td>Machine</td>
+              {% for pos in positions %}
+              <td>
+                <input 
+                type="text"
+                class="form-control _3-2-2-machine"
+                data-pos="{{pos.id}}"
+                name="_3_2_2_machine[{{pos.id}}]"
+                readonly
+                />
+              </td>
+              {% endfor %}
+             </tr>
+
+             <!--Tool Nr.-->
+             <tr>
+              <td>Tool Nr.</td>
+              {% for pos in positions %}
+              <td>
+                <input 
+                type="text" 
+                class="form-control _3-2-2-tool-nr" 
+                data-pos="{{pos.id}}" 
+                name="_3_2_2_tool_nr[{{pos.id}}]" 
+                readonly
+                />
+              </td>
+              {% endfor %}
+             </tr>
+
+             <!--Number production runs per year-->
+             <tr>
+              <td>Number production runs per year</td>
+              {% for pos in positions %}
+              <td>
+                <input 
+                type="number" 
+                class="form-control _3-2-2-num-of-production-runs-per-year" 
+                data-pos="{{pos.id}}" 
+                name="_3_2_2_num_of_production_runs_per_year[{{pos.id}}]" 
+                readonly
+                />
+              </td>
+              {% endfor %}
+             </tr>
+
+             <!--Number of finished parts per cycle and tool-->
+             <tr>
+              <td>Number of finished parts per cycle and tool</td>
+              {% for pos in positions %}
+              <td>
+                <input 
+                type="number" 
+                class="form-control _3-2-2-num-of-finished-parts-per-cycle-tool" 
+                data-pos="{{pos.id}}" 
+                name="_3_2_2_num_of_finished_parts_per_cycle_tool[{{pos.id}}]" 
+                readonly
+                />
+              </td>
+              {% endfor %}
+             </tr>
+
+             <!--Number of finished parts per cycle and part-nr.-->
+             <tr>
+              <td>Number of finished parts per cycle and part-nr.</td>
+              {% for pos in positions %}
+              <td>
+                <input 
+                type="number" 
+                class="form-control _3-2-2-num-of-finished-parts-per-cycle-part-nr" 
+                data-pos="{{pos.id}}" 
+                name="_3_2_2_num_of_finished_parts_per_cycle_part_nr[{{pos.id}}]"
+                readonly 
+                />
+              </td>
+              {% endfor %}
+             </tr>
+
+             <!--Start up and phase out time per production run -->
+             <tr>
+              <td>Start up and phase out time per production run  [h]</td>
+              {% for pos in positions %}
+              <td>
+                <input 
+                  type="number" 
+                  class="form-control _3-2-2-startup-phaseout-time-per-production" 
+                  data-pos="{{pos.id}}" 
+                  name="_3_2_2_startup_phaseout_time_per_production[{{pos.id}}]" 
+                />
+              </td>
+              {% endfor %}
+             </tr>
+
+             <!--Cycle time-->
+             <tr>
+              <td>Cycle time [s]</td>
+              {% for pos in positions %}
+              <td>
+                <input 
+                type="number" 
+                class="form-control _3-2-2-cycle-time" 
+                data-pos="{{pos.id}}" 
+                name="_3_2_2_cycle_time[{{pos.id}}]" 
+                />
+              </td>
+              {% endfor %}
+             </tr>
+
+             <!--Additional downtime or breakdowns-->
+             <tr>
+              <td>Additional downtime or breakdowns  [%]</td>
+              {% for pos in positions %}
+              <td>
+                <input 
+                type="number" 
+                class="form-control _3-2-2-downtime-breakdowns" 
+                data-pos="{{pos.id}}" 
+                name="_3_2_2_downtime_breakdowns[{{pos.id}}]" 
+                />
+              </td>
+              {% endfor %}
+             </tr>
+
+             <!--Total waste rate-->
+             <tr>
+              <td>Total waste rate [%]</td>
+              {% for pos in positions %}
+              <td>
+                <input 
+                type="number" 
+                class="form-control _3-2-2-total-waste-rate" 
+                data-pos="{{pos.id}}" 
+                name="_3_2_2_total_waste_rate[{{pos.id}}]" 
+                />
+              </td>
+              {% endfor %}
+             </tr>
+
+             <!--Number of parts per production run / Production lot-->
+             <tr>
+              <td>Number of parts per production run / Production lot</td>
+              {% for pos in positions %}
+              <td>
+                <input 
+                type="number" 
+                class="form-control _3-2-2-num-of-parts-per-production-lot" 
+                data-pos="{{pos.id}}" 
+                name="_3_2_2_num_of_parts_per_production_lot[{{pos.id}}]" 
+                readonly
+                />
+              </td>
+              {% endfor %}
+             </tr>
+
+             <!--Duration of production run (per part-nr.)-->
+             <tr>
+              <td>Duration of production run (per part-nr.)  [h]</td>
+              {% for pos in positions %}
+              <td>
+                <input 
+                type="number" 
+                class="form-control _3-2-2-duration-production-run" 
+                data-pos="{{pos.id}}" 
+                name="_3_2_2_duration_of_production_run[{{pos.id}}]"
+                readonly 
+                />
+              </td>
+              {% endfor %}
+             </tr>
+
+             <!--Annual machine time (per part-nr.)-->
+             <tr>
+              <td>Annual machine time (per part-nr.)  [h]</td>
+              {% for pos in positions %}
+              <td>
+                <input 
+                type="number" 
+                class="form-control _3-2-2-annual-machine-time" 
+                data-pos="{{pos.id}}" 
+                name="_3_2_2_annual_machine_time[{{pos.id}}]"
+                readonly 
+                />
+              </td>
+              {% endfor %}
+             </tr>
+
+             <!--Shots per hour (eff.)-->
+             <tr>
+              <td>Shots per hour (eff.)  [1/h] </td>
+              {% for pos in positions %}
+              <td>
+                <input 
+                type="number" 
+                class="form-control _3-2-2-shots-per-hour" 
+                data-pos="{{pos.id}}" 
+                name="_3_2_2_shots_per_hour[{{pos.id}}]"
+                readonly 
+                />
+              </td>
+              {% endfor %}
+             </tr>
+
+             <!--Machine rate-->
+             <tr>
+              <td>Machine rate [EUR/h]</td>
+              {% for pos in positions %}
+              <td>
+                <input 
+                  type="number" 
+                  class="form-control _3-2-2-machine-rate" 
+                  data-pos="{{pos.id}}" 
+                  name="_3_2_2_machine_rate[{{pos.id}}]"
+                  readonly
+                />
+              </td>
+              {% endfor %}
+             </tr>
+
+             <!--Production Mat. B indirect cost -->
+             <tr>
+              <td>Production Mat. B indirect cost [%]</td>
+              {% for pos in positions %}
+              <td>
+                <input 
+                  type="number" 
+                  class="form-control _3-2-2-production-mat-b-indirect-cost" 
+                  data-pos="{{pos.id}}" 
+                  name="_3_2_2_production_mat_b_indirect_cost[{{pos.id}}]" 
+                />
+              </td>
+              {% endfor %}
+             </tr>
+
+             <!--Production cost per part-->
+             <tr class="table-warning">
+              <td>Production cost per part [EUR]</td>
+              {% for pos in positions %}
+              <td>
+                <input 
+                type="number" 
+                class="form-control _3-2-2-production-cost-per-part" 
+                data-pos="{{pos.id}}" 
+                name="_3_2_2_production_cost_per_part[{{pos.id}}]" 
+                readonly
+                />
+              </td>
+              {% endfor %}
+             </tr>
+
+             <!-- 3.2.3 LABOUR COST (1K)-->
+             <tr class="table-secondary section-sub">
+              <td colspan="{{ positions|length + 1 }}">
+                <strong>3.2.3 LABOUR COST (1K)</strong>
+              </td>
+             </tr>
+
+             <!--Personnel employment during production-->
+             <tr>
+              <td>Personnel employment during production [%]</td>
+              {% for pos in positions %} 
+              <td>
+                <input 
+                  type="number"
+                  class="form-control _3-2-3-personnel-employment-during-production"
+                  data-pos="{{pos.id}}" 
+                  name="_3_2_3_personnel_employment_during_production[{{pos.id}}]"
+                />
+              </td>
+              {% endfor %}
+             </tr>
+
+             <!--Labour cost -->
+             <tr>
+              <td>Labour cost</td>
+              {% for pos in positions %}
+              <td>
+                <input 
+                  type="number"
+                  class="form-control _3-2-3-labour-cost" 
+                  data-pos="{{pos.id}}"
+                  name="_3_2_3_labour_cost[{{pos.id}}]"
+                  readonly
+                />
+              </td>
+              {% endfor %}
+             </tr>
+
+             <!--Labour setup cost (100%)-->
+             <tr>
+              <td>Labour setup cost (100%)</td>
+              {% for pos in positions %}
+              <td>
+                <input 
+                  type="number"
+                  class="form-control _3-2-3-Labour-setup-cost" 
+                  data-pos="{{pos.id}}"
+                  name="_3_2_3_Labour_setup_cost[{{pos.id}}]"
+                  readonly
+                />
+              </td>
+              {% endfor %}
+             </tr>
+
+             <!--Labour indirect cost-->
+             <tr>
+              <td>Labour indirect cost [%]</td>
+              {% for pos in positions %}
+              <td>
+                <input 
+                  type="number"
+                  class="form-control _3-2-3-Labour-indirect-cost" 
+                  data-pos="{{pos.id}}"
+                  name="_3_2_3_Labour_indirect_cost[{{pos.id}}]" 
+                />
+              </td>
+              {% endfor %}
+             </tr>
+
+             <!--Labour cost per part-->
+             <tr class="table-warning">
+              <td>Labour cost per part [EUR]</td>
+              {% for pos in positions %}
+              <td>
+                <input 
+                  type="number"
+                  class="form-control _3-2-3-Labour-cost-per-part" 
+                  data-pos="{{pos.id}}"
+                  name="_3_2_3_Labour_cost_per_part[{{pos.id}}]"
+                  readonly 
+                />
+              </td>
+              {% endfor %}
+             </tr>
+
+             <!-- =========3.3 Tooling Cost==========-->
+             <tr class="table-primary section-main">
+              <td colspan="{{positions|length+1}}">
+                <strong>3.3 Tooling Cost maintenance / amortization </strong>
+              </td>
+             </tr>
+
+             <!-- Mould maintenance costs [%] -->
+             <tr>
+              <td>Mould maintenance costs [%]</td>
+              {% for pos in positions %}
+              <td>  
+                <input 
+                  type="number"
+                  class="form-control _3-3-mould-maintenance-cost"
+                  data-pos="{{pos.id}}" 
+                  name="_3_3_mould_maintenance_cost[{{pos.id}}]"
+                />
+              </td>
+              {% endfor %}
+             </tr>
+
+             <!-- Mould amortization over part costs?-->
+             <tr>
+              <td>Mould amortization over part costs?</td>
+              {% for pos in positions %}
+              <td>
+                <select
+                class="form-control _3-3-mould-amortization-over-part-cost"
+                  data-pos="{{pos.id}}"
+                  name="_3_3_mould_amortization_over_part_cost[{{pos.id}}]" 
+                >
+                  <option value="">-</option>
+                  <option value="no amortization">no amortization</option>
+                  <option value="amortization">amortization</option>
+                </select>
+              </td>
+              {% endfor %}
+             </tr>
+
+             <!-- Annual interest rate -->
+             <tr>
+              <td>Annual interest rate  [%]</td>
+              {% for pos in positions %}
+              <td>
+                <input 
+                  type="number"
+                  step="any" 
+                  class="form-control _3-3-annual-interest-rate"
+                  data-pos="{{pos.id}}"
+                  name="_3_3_annual_interest_rate[{{pos.id}}]" 
+                />
+              </td>
+              {% endfor %}
+             </tr>
+
+             <!--Amortization period-->
+             <tr>
+              <td>Amortization Period  [Y]</td>
+              {% for pos in positions %}
+              <td>
+                <input 
+                  type="number"
+                  step="any"
+                  class="form-control _3-3-amortization-period"
+                  data-pos="{{pos.id}}"
+                  name="_3_3_amortization_period[{{pos.id}}]"
+                />
+              </td>
+              {% endfor %}
+             </tr>
+
+             <!-- Tooling Cost Per Part-->
+              <tr class="table-warning">
+                <td>Tooling Cost Per Part [EUR]</td>
+                {% for pos in positions %}
+                <td>
+                  <input
+                    type="number" 
+                    step="any"
+                    class="form-control _3-3-tooling-cost-per-part"
+                    data-pos="{{pos.id}}"
+                    name="_3_3_tooling_cost_per_part[{{pos.id}}]"
+                    readonly
+                  />
+                </td>
+                {% endfor %}
+              </tr>
+
+              <!-- =========== 3.4 Purchased Components (Pins, Clips, Metal)-->
+               <tr class="table-primary section-main">
+                <td colspan="{{positions | length+1}}">
+                  <strong>3.4 Purchased Components (Pins, Clips, Metal)</strong>
+                </td>
+               </tr>
+
+               <!--Material C (e.g. Metal plates)-->
+               <tr>
+                <td>Material C (e.g. Metal plates)</td>
+                {% for pos in positions %}
+                <td>
+                  <input 
+                    type="number"
+                    step="any" 
+                    class="form-control _3-4-material-c"  
+                    data-pos="{{pos.id}}"
+                    name="_3_4_material_c[{{pos.id}}]"
+                  />
+                </td>
+                {% endfor %}
+               </tr>
+
+               <!--Material C indirect cost [%]-->
+               <tr>
+                <td>Material C indirect cost [%]</td>
+                {% for pos in positions %}
+                <td>
+                  <input 
+                    type="number"
+                    step="any"
+                    class="form-control _3-4-material-c-indirect-cost"
+                    data-pos="{{pos.id}}"
+                    name="_3_4_material_c_indirect_cost[{{pos.id}}]"
+                  />
+                </td>
+                {% endfor %}
+               </tr>
+
+               <!--Material C cost -->
+               <tr class="table-warning">
+                <td>Material C cost</td>
+                {% for pos in positions %}
+                <td>
+                  <input 
+                    type="number" 
+                    step="any" 
+                    class="form-control _3-4-material-c-cost"
+                    data-pos="{{pos.id}}"
+                    name="_3_4_material_c_cost[{{pos.id}}]"
+                    readonly
+                    />
+                </td>
+                {% endfor %}
+               </tr>
+
+               <!--Material D (e.g. Butyl stripes / Pins / Carrier / other)-->
+               <tr>
+                <td>Material D (e.g. Butyl stripes / Pins / Carrier / other)</td>
+                {% for pos in positions %}
+                <td>
+                  <input 
+                    type="number"
+                    step="any"
+                    class="form-control _3-4-material-d"
+                    data-pos="{{pos.id}}"
+                    name="_3_4_material_d[{{pos.id}}]"
+                  />
+                </td>
+                {% endfor %}
+               </tr>
+
+               <!--Material D indirect cost -->
+               <tr>
+                <td>Material D indirect cost [%]</td>
+                {% for pos in positions %}
+                <td>
+                  <input
+                    type="number"
+                    step="any"
+                    class="form-control _3-4-material-d-indirect-cost" 
+                    data-pos="{{pos.id}}"
+                    name="_3_4_material_d_indirect_cost[{{pos.id}}]"
+                  />
+                </td>
+                {% endfor %}
+               </tr>
+
+               <!-- Material  D Cost -->
+                <tr class="table-warning">
+                  <td>Material D Cost</td>
+                  {% for pos in positions %}
+                  <td>
+                    <input
+                      type="number"
+                      step="any"
+                      class="form-control _3-4-material-d-cost"
+                      data-pos="{{pos.id}}"
+                      name="_3_4_material_d_cost[{{pos.id}}]"
+                      readonly
+                    />
+                  </td>
+                  {% endfor %}
+                </tr>
+
+                <!--Purchased components cost-->
+                <tr class="table-warning">
+                  <td>Purchased components cost</td>
+                  {% for pos in positions%}
+                  <td>
+                    <input
+                      type="number"
+                      step="any"
+                      class="form-control _3-4-purchased-components-cost"
+                      data-pos={{pos.id}}
+                      name="_3_4_purchased_components_cost[{{pos.id}}]"
+                      readonly 
+                    />
+                  </td>
+                  {% endfor %}
+                </tr>
+
+              <!-- =========== 3.5 Additional Costs =============-->
+              <tr class="table-primary section-main">
+                <td colspan="{{positions | length+1}}">
+                  <strong>3.5 Additional Costs </strong>
+                </td>
+              </tr>
+
+              <!-- 3.5.1 Assembly -->
+              <tr class="table-secondary section-sub">
+               <td colspan="{{ positions|length + 1 }}">
+                 <strong>3.5.1 Assembly </strong>
+               </td>
+              </tr>
+
+             <!-- Assembly Time -->
+              <tr>
+                <td>Assembly Time [s]</td>
+                {% for pos in positions%}
+                <td>
+                  <input
+                    type="number"
+                    step="any"
+                    class="form-control _3-5-1-assembly-time"
+                    data-pos={{pos.id}}
+                    name="_3_5_1_assembly_time[{{pos.id}}]" 
+                  />
+                </td>
+                {% endfor %}
+              </tr>
+
+              <!-- Assembly Cost Per Part -->
+              <tr class="table-warning">
+                <td>Assembly Cost Per Part [EUR]</td>
+                {% for pos in positions%}
+                <td>
+                  <input
+                    type="number"
+                    step="any"
+                    class="form-control _3-5-1-assembly-cost-per-part"
+                    data-pos={{pos.id}}
+                    name="_3_5_1_assembly_cost_per_part[{{pos.id}}]" 
+                    readonly
+                  />
+                </td>
+                {% endfor %}
+              </tr>
+
+              <!-- 3.5.2 Quality Control -->
+              <tr class="table-secondary section-sub">
+               <td colspan="{{ positions|length + 1 }}">
+                 <strong>3.5.2 Quality Control </strong>
+               </td>
+              </tr>
+
+              <!-- Quality Control cost per part -->
+              <tr class="table-warning">
+                <td>Quality Control cost per part [EUR]</td>
+                {% for pos in positions%}
+                <td>
+                  <input
+                    type="number"
+                    step="any"
+                    class="form-control _3-5-2-quality-control-cost-per-part"
+                    data-pos={{pos.id}}
+                    name="_3_5_2_quality_control_cost_per_part[{{pos.id}}]" 
+                  />
+                </td>
+                {% endfor %}
+              </tr>
+
+              <!--============3.6 Logistic calculation================-->
+              <tr class="table-primary section-main">
+                <td colspan="{{positions | length+1}}">
+                  <strong>3.6 Logistic calculation</strong>
+                </td>
+              </tr>
+
+              <!--3.6.1.1 Packaging Cost fix-->
+              <tr class="table-secondary section-sub">
+                <td colspan="{{positions| length+1}}">
+                  <strong>3.6.1.1 Packaging cost fix</strong>
+                </td>
+              </tr>
+
+              <!--packaging fix cost / part-->
+              <tr>
+                <td>packaging fix cost / part [EUR]</td>
+                {% for pos in positions %}
+                <td>
+                  <input 
+                    type="number" 
+                    step="any"
+                    class="form-control _3-6-1-1-packaging-fix-cost-per-part"
+                    data-pos={{pos.id}}
+                    name="_3_6_1_1_packaging_fix_cost_per_part[{{pos.id}}]"
+                  />
+                </td>
+                {% endfor %}
+              </tr>
+
+              <!--3.6.1.2 Packaging cost calculation-->
+              <tr class="table-secondary section-sub">
+                <td colspan="{{positions| length+1}}">
+                  <strong>3.6.1.2 Packaging cost calculation</strong>
+                </td>
+              </tr>
+
+              <tr>
+                <td colspan="{{positions| length+1}}">
+                  <b>Rent for returnable packaging</b>
+                </td>
+              </tr>
+
+              <!--turnaround time-->
+              <tr>
+                <td>turnaround time [days]</td>
+                {% for pos in positions %}
+                <td>
+                  <input 
+                    type="number" 
+                    step="any"
+                    class="form-control _3-6-1-2-turnaround-time"
+                    data-pos={{pos.id}}
+                    name="_3_6_1_2_turnaround_time[{{pos.id}}]"
+                  />
+                </td>
+                {% endfor %}
+              </tr>
+
+              <!--Rent / Box / day-->
+              <tr>
+                <td>Rent / Box / day [EUR]</td>
+                {% for pos in positions %}
+                <td>
+                  <input 
+                    type="number" 
+                    step="any"
+                    class="form-control _3-6-1-2-rent-box-day"
+                    data-pos={{pos.id}}
+                    name="_3_6_1_2_rent_box_day[{{pos.id}}]"
+                  />
+                </td>
+                {% endfor %}
+              </tr>
+
+              <!--Rent / pallet / day-->
+              <tr>
+                <td>Rent / pallet / day [EUR]</td>
+                {% for pos in positions %}
+                <td>
+                  <input 
+                    type="number" 
+                    step="any"
+                    class="form-control _3-6-1-2-rent-pallet-day"
+                    data-pos={{pos.id}}
+                    name="_3_6_1_2_rent_pallet_day[{{pos.id}}]"
+                  />
+                </td>
+                {% endfor %}
+              </tr>
+
+              <!--Rent / top / day-->
+              <tr>
+                <td>Rent / top / day [EUR]</td>
+                {% for pos in positions %}
+                <td>
+                  <input 
+                    type="number" 
+                    step="any"
+                    class="form-control _3-6-1-2-rent-top-day"
+                    data-pos={{pos.id}}
+                    name="_3_6_1_2_rent_top_day[{{pos.id}}]"
+                  />
+                </td>
+                {% endfor %}
+              </tr>
+
+              <!--Total rent / packaging unit / day-->
+              <tr>
+                <td>Total rent / packaging unit / day [EUR]</td>
+                {% for pos in positions %}
+                <td>
+                  <input 
+                    type="number" 
+                    step="any"
+                    class="form-control _3-6-1-2-total-rent-packaging-unit-day"
+                    data-pos={{pos.id}}
+                    name="_3_6_1_2_total_rent_packaging_unit_day[{{pos.id}}]"
+                    readonly
+                  />
+                </td>
+                {% endfor %}
+              </tr>
+
+              <!--Total rent / packaging unit / turnaround-->
+              <tr>
+                <td>Total rent / packaging unit / turnaround [EUR]</td>
+                {% for pos in positions %}
+                <td>
+                  <input 
+                    type="number" 
+                    step="any"
+                    class="form-control _3-6-1-2-total-rent-packaging-unit-turnaround"
+                    data-pos={{pos.id}}
+                    name="_3_6_1_2_total_rent_packaging_unit_turnaround[{{pos.id}}]"
+                    readonly
+                  />
+                </td>
+                {% endfor %}
+              </tr>
+
+              <!--Total rent / turnaround /part-->
+              <tr class="table-warning">
+                <td>Total rent / turnaround /part [EUR]</td>
+                {% for pos in positions %}
+                <td>
+                  <input 
+                    type="number" 
+                    step="any"
+                    class="form-control _3-6-1-2-total-rent-turnaround-part"
+                    data-pos={{pos.id}}
+                    name="_3_6_1_2_total_rent_turnaround_part[{{pos.id}}]"
+                    readonly
+                  />
+                </td>
+                {% endfor %}
+              </tr>
+
+              <tr>
+                <td colspan="{{positions| length+1}}">
+                  <b>Additional packaging materials</b>
+                </td>
+              </tr>
+
+              <!--Cardborad inlays / box-->
+              <tr>
+                <td>Cardborad inlays / box [EUR]</td>
+                {% for pos in positions %}
+                <td>
+                  <input 
+                    type="number" 
+                    step="any"
+                    class="form-control _3-6-1-2-cardborad-inlays-box"
+                    data-pos={{pos.id}}
+                    name="_3_6_1_2_cardborad_inlays_box[{{pos.id}}]"
+                  />
+                </td>
+                {% endfor %}
+              </tr>
+
+              <!--Cardborad inlays / part-->
+              <tr class="table-warning">
+                <td><b>Cardborad inlays / part [EUR]</b></td>
+                {% for pos in positions %}
+                <td>
+                  <input 
+                    type="number" 
+                    step="any"
+                    class="form-control _3-6-1-2-cardborad-inlays-part"
+                    data-pos={{pos.id}}
+                    name="_3_6_1_2_cardborad_inlays_part[{{pos.id}}]"
+                    readonly
+                  />
+                </td>
+                {% endfor %}
+              </tr>
+
+              <!-- PE bag / box -->
+              <tr>
+                <td>PE bag / box [EUR]</td>
+                {% for pos in positions %}
+                <td>
+                  <input 
+                    type="number" 
+                    step="any"
+                    class="form-control _3-6-1-2-pe-bag-box"
+                    data-pos={{pos.id}}
+                    name="_3_6_1_2_pe_bag_box[{{pos.id}}]"
+                  />
+                </td>
+                {% endfor %}
+              </tr>
+
+              <!-- PE bag / part -->
+              <tr class="table-warning">
+                <td><b>PE bag / part [EUR]</b></td>
+                {% for pos in positions %}
+                <td>
+                  <input 
+                    type="number" 
+                    step="any"
+                    class="form-control _3-6-1-2-pe-bag-part"
+                    data-pos={{pos.id}}
+                    name="_3_6_1_2_pe_bag_part[{{pos.id}}]"
+                    readonly
+                  />
+                </td>
+                {% endfor %}
+              </tr>
+
+              <tr>
+                <td colspan="{{positions| length+1}}">
+                  <b>Additional setting cost</b>
+                </td>
+              </tr>
+
+              <!-- setting time per part -->
+              <tr>
+                <td>setting time per part [s]</td>
+                {% for pos in positions %}
+                <td>
+                  <input 
+                    type="number" 
+                    step="any"
+                    class="form-control _3-6-1-2-setting-time-part"
+                    data-pos={{pos.id}}
+                    name="_3_6_1_2_setting_time_part[{{pos.id}}]"
+                  />
+                </td>
+                {% endfor %}
+              </tr>
+
+              <!-- setting cost / part -->
+              <tr class="table-warning">
+                <td><b>setting cost / part [EUR]</b></td>
+                {% for pos in positions %}
+                <td>
+                  <input 
+                    type="number" 
+                    step="any"
+                    class="form-control _3-6-1-2-setting-cost-part"
+                    data-pos={{pos.id}}
+                    name="_3_6_1_2_setting_cost_part[{{pos.id}}]"
+                    readonly
+                  />
+                </td>
+                {% endfor %}
+              </tr>
+
+              <tr>
+                <td colspan="{{positions| length+1}}">
+                  <b>Administration cost</b>
+                </td>
+              </tr>
+
+              <!-- Administration cost / Box - (label) -->
+              <tr>
+                <td>Administration cost / Box - (label) [EUR]</td>
+                {% for pos in positions %}
+                <td>
+                  <input 
+                    type="number" 
+                    step="any"
+                    class="form-control _3-6-1-2-administration-cost-box-label"
+                    data-pos={{pos.id}}
+                    name="_3_6_1_2_administration_cost_box_label[{{pos.id}}]"
+                  />
+                </td>
+                {% endfor %}
+              </tr>
+
+              <!-- Administration cost / Pallet - (commision) -->
+              <tr>
+                <td>Administration cost / Pallet - (commision) [EUR]</td>
+                {% for pos in positions %}
+                <td>
+                  <input 
+                    type="number" 
+                    step="any"
+                    class="form-control _3-6-1-2-administration-cost-pallet-commision"
+                    data-pos={{pos.id}}
+                    name="_3_6_1_2_administration_cost_pallet_commision[{{pos.id}}]"
+                  />
+                </td>
+                {% endfor %}
+              </tr>
+
+              <!-- Administration cost / Delivery - (paper work) -->
+              <tr>
+                <td>Administration cost / Delivery - (paper work) [EUR]</td>
+                {% for pos in positions %}
+                <td>
+                  <input 
+                    type="number" 
+                    step="any"
+                    class="form-control _3-6-1-2-administration-cost-delivery-paper-work"
+                    data-pos={{pos.id}}
+                    name="_3_6_1_2_administration_cost_delivery_paper_work[{{pos.id}}]"
+                  />
+                </td>
+                {% endfor %}
+              </tr>
+
+              <!-- Admin cost / part -->
+              <tr class="table-warning">
+                <td><b>Admin cost / part [EUR]</b></td>
+                {% for pos in positions %}
+                <td>
+                  <input 
+                    type="number" 
+                    step="any"
+                    class="form-control _3-6-1-2-admin-cost-part"
+                    data-pos={{pos.id}}
+                    name="_3_6_1_2_admin_cost_part[{{pos.id}}]"
+                    readonly
+                  />
+                </td>
+                {% endfor %}
+              </tr>
+
+              <!-- Total Packaging Cost (A-Price) -->
+              <tr class="table-warning">
+                <td><b>Total Packaging Cost (A-Price)</b></td>
+                {% for pos in positions %}
+                <td>
+                  <input 
+                    type="number" 
+                    step="any"
+                    class="form-control _3-6-1-2-total-packaging-cost-a-price"
+                    data-pos={{pos.id}}
+                    name="_3_6_1_2_total_packaging_cost_a_price[{{pos.id}}]"
+                    readonly
+                  />
+                </td>
+                {% endfor %}
+              </tr>
+
+              <!--3.6.2 Transport Cost-->
+              <tr class="table-secondary section-sub">
+                <td colspan="{{positions| length+1}}">
+                  <strong>3.6.2 Transport Cost</strong>
+                </td>
+              </tr>
+
+              <!-- Transport Cost / pallet -->
+              <tr>
+                <td><b>Transport Cost / pallet [EUR]</b></td>
+                {% for pos in positions %}
+                <td>
+                  <input 
+                    type="number" 
+                    step="any"
+                    class="form-control _3-6-2-transport-cost-pallet"
+                    data-pos={{pos.id}}
+                    name="_3_6_2_transport_cost_pallet[{{pos.id}}]"
+                  />
+                </td>
+                {% endfor %}
+              </tr>
+
+              <!-- Transport Cost / part (B-price) -->
+              <tr class="table-warning">
+                <td><b>Transport Cost / part (B-price) [EUR]</b></td>
+                {% for pos in positions %}
+                <td>
+                  <input 
+                    type="number" 
+                    step="any"
+                    class="form-control _3-6-2-transport-cost-part-b-price"
+                    data-pos={{pos.id}}
+                    name="_3_6_2_transport_cost_part_b_price[{{pos.id}}]"
+                    readonly
+                  />
+                </td>
+                {% endfor %}
+              </tr>
+              
+              <!--============3.7 Cost Split================-->
+              <tr class="table-primary section-main">
+                <td colspan="{{positions | length+1}}">
+                  <strong>3.7 Cost Split</strong>
+                </td>
+              </tr>
+
+              <!--3.7.1 Cost split per part-->
+              <tr class="table-secondary section-sub">
+                <td colspan="{{positions| length+1}}">
+                  <strong>3.7.1 Cost split per part</strong>
+                </td>
+              </tr>
+
+              <!-- Material A -->
+              <tr>
+                <td>Material A [EUR]</td>
+                {% for pos in positions %}
+                <td>
+                  <input 
+                    type="number" 
+                    step="any"
+                    class="form-control _3-7-1-material-a"
+                    data-pos={{pos.id}}
+                    name="_3_7_1_material_a[{{pos.id}}]"
+                    readonly
+                  />
+                </td>
+                {% endfor %}
+              </tr>
+
+              <!-- Material B -->
+              <tr>
+                <td>Material B [EUR]</td>
+                {% for pos in positions %}
+                <td>
+                  <input 
+                    type="number" 
+                    step="any"
+                    class="form-control _3-7-1-material-b"
+                    data-pos={{pos.id}}
+                    name="_3_7_1_material_b[{{pos.id}}]"
+                    readonly
+                  />
+                </td>
+                {% endfor %}
+              </tr>
+
+              <!-- Machine (A+B) -->
+              <tr>
+                <td>Machine (A+B) [EUR]</td>
+                {% for pos in positions %}
+                <td>
+                  <input 
+                    type="number" 
+                    step="any"
+                    class="form-control _3-7-1-machine-a-b"
+                    data-pos={{pos.id}}
+                    name="_3_7_1_machine_a_b[{{pos.id}}]"
+                    readonly
+                  />
+                </td>
+                {% endfor %}
+              </tr>
+
+              <!-- Labour (A+B) -->
+              <tr>
+                <td>Labour (A+B) [EUR]</td>
+                {% for pos in positions %}
+                <td>
+                  <input 
+                    type="number" 
+                    step="any"
+                    class="form-control _3-7-1-Labour-a-b"
+                    data-pos={{pos.id}}
+                    name="_3_7_1_Labour_a_b[{{pos.id}}]"
+                    readonly
+                  />
+                </td>
+                {% endfor %}
+              </tr>
+
+              <!-- Tooling (A+B) -->
+              <tr>
+                <td>Tooling (A+B) [EUR]</td>
+                {% for pos in positions %}
+                <td>
+                  <input 
+                    type="number" 
+                    step="any"
+                    class="form-control _3-7-1-tooling-a-b"
+                    data-pos={{pos.id}}
+                    name="_3_7_1_tooling_a_b[{{pos.id}}]"
+                    readonly
+                  />
+                </td>
+                {% endfor %}
+              </tr>
+
+              <!-- Purchased Components -->
+              <tr>
+                <td>Purchased Components [EUR]</td>
+                {% for pos in positions %}
+                <td>
+                  <input 
+                    type="number" 
+                    step="any"
+                    class="form-control _3-7-1-purchased-components"
+                    data-pos={{pos.id}}
+                    name="_3_7_1_purchased_components[{{pos.id}}]"
+                    readonly
+                  />
+                </td>
+                {% endfor %}
+              </tr>
+
+              <!-- Assembly -->
+              <tr>
+                <td>Assembly [EUR]</td>
+                {% for pos in positions %}
+                <td>
+                  <input 
+                    type="number" 
+                    step="any"
+                    class="form-control _3-7-1-assembly"
+                    data-pos={{pos.id}}
+                    name="_3_7_1_assembly[{{pos.id}}]"
+                    readonly
+                  />
+                </td>
+                {% endfor %}
+              </tr>
+
+              <!-- Quality -->
+              <tr>
+                <td>Quality [EUR]</td>
+                {% for pos in positions %}
+                <td>
+                  <input 
+                    type="number" 
+                    step="any"
+                    class="form-control _3-7-1-quality"
+                    data-pos={{pos.id}}
+                    name="_3_7_1_quality[{{pos.id}}]"
+                    readonly
+                  />
+                </td>
+                {% endfor %}
+              </tr>
+
+              <!-- Logistic / Packaging -->
+              <tr>
+                <td>Logistic / Packaging [EUR]</td>
+                {% for pos in positions %}
+                <td>
+                  <input 
+                    type="number" 
+                    step="any"
+                    class="form-control _3-7-1-logistic-packaging"
+                    data-pos={{pos.id}}
+                    name="_3_7_1_logistic_packaging[{{pos.id}}]"
+                    readonly
+                  />
+                </td>
+                {% endfor %}
+              </tr>
+
+              <!-- Handling / repacking costs -->
+              <tr>
+                <td>Handling / repacking [EUR]</td>
+                {% for pos in positions %}
+                <td>
+                  <input 
+                    type="number" 
+                    step="any"
+                    class="form-control _3-7-1-handling-repacking"
+                    data-pos={{pos.id}}
+                    name="_3_7_1_handling_repacking[{{pos.id}}]"
+                  />
+                </td>
+                {% endfor %}
+              </tr>
+
+              <!-- Manufactured cost -->
+              <tr class="table-warning">
+                <td>Manufactured cost [EUR]</td>
+                {% for pos in positions %}
+                <td>
+                  <input 
+                    type="number" 
+                    step="any"
+                    class="form-control _3-7-1-manufactured-cost"
+                    data-pos={{pos.id}}
+                    name="_3_7_1_manufactured_cost[{{pos.id}}]"
+                    readonly
+                  />
+                </td>
+                {% endfor %}
+              </tr>
+
+              <!-- Toller markup (Profit) -->
+              <tr>
+                <td>Toller markup (Profit) [%]</td>
+                {% for pos in positions %}
+                <td>
+                  <input 
+                    type="number" 
+                    step="any"
+                    class="form-control _3-7-1-toller-markup-profit"
+                    data-pos={{pos.id}}
+                    name="_3_7_1_toller_markup_profit[{{pos.id}}]"
+                  />
+                </td>
+                {% endfor %}
+              </tr>
+
+              <!-- Total production cost / part -->
+              <tr>
+                <td>Total production cost / part [EUR]</td>
+                {% for pos in positions %}
+                <td>
+                  <input 
+                    type="number" 
+                    step="any"
+                    class="form-control _3-7-1-total-production-cost-part"
+                    data-pos={{pos.id}}
+                    name="_3_7_1_total_production_cost_part[{{pos.id}}]"
+                    readonly
+                  />
+                </td>
+                {% endfor %}
+              </tr>
+
+              <!-- ONE GSC Mark-Up (MU1) -->
+              <tr>
+                <td>ONE GSC Mark-Up (MU1) [EUR]</td>
+                {% for pos in positions %}
+                <td>
+                  <input 
+                    type="number" 
+                    step="any"
+                    class="form-control _3-7-1-one-gsc-mark-up-mu1"
+                    data-pos={{pos.id}}
+                    name="_3_7_1_one_gsc_mark_up_mu1[{{pos.id}}]"
+                  />
+                </td>
+                {% endfor %}
+              </tr>
+
+              <!-- Responsibility price / part -->
+              <tr class="table-warning">
+                <td>Responsibility price / part [EUR]</td>
+                {% for pos in positions %}
+                <td>
+                  <input 
+                    type="number" 
+                    step="any"
+                    class="form-control _3-7-1-responsibility-price-part"
+                    data-pos={{pos.id}}
+                    name="_3_7_1_responsibility_price_part[{{pos.id}}]"
+                    readonly
+                  />
+                </td>
+                {% endfor %}
+              </tr>
+
+              <!-- Responsibility price / car -->
+              <tr class="table-warning">
+                <td>Responsibility price / car [EUR]</td>
+                {% for pos in positions %}
+                <td>
+                  <input 
+                    type="number" 
+                    step="any"
+                    class="form-control _3-7-1-responsibility-price-car"
+                    data-pos={{pos.id}}
+                    name="_3_7_1_responsibility_price_car[{{pos.id}}]"
+                    readonly
+                  />
+                </td>
+                {% endfor %}
+              </tr>
+
+              <!-- Mould cost (prorated per part nr.) -->
+              <tr class="table-warning">
+                <td>Mould cost (prorated per part nr.) [EUR]</td>
+                {% for pos in positions %}
+                <td>
+                  <input 
+                    type="number" 
+                    step="any"
+                    class="form-control _3-7-1-mould-cost"
+                    data-pos={{pos.id}}
+                    name="_3_7_1_mould_cost[{{pos.id}}]"
+                    readonly
+                  />
+                </td>
+                {% endfor %}
+              </tr>
+
+              <!-- Cost composition -->
+              <tr>
+                <td>Cost composition [EUR]</td>
+                {% for pos in positions %}
+                <td>
+                  <input 
+                    type="text" 
+                    class="form-control _3-7-1-cost-composition"
+                    data-pos={{pos.id}}
+                    name="_3_7_1_cost_composition[{{pos.id}}]"
+                    readonly
+                  />
+                </td>
+                {% endfor %}
+              </tr>
+
+              <!--Comments-->
+              <tr>
+                <td>Comments</td>
+                {% for pos in positions %}
+                <td>
+                  <textarea
+                    name="_3_7_1_comments[{{ pos.id }}]"
+                    class="form-control _3-7-1-comments"
+                  ></textarea>
+                </td>
+                {% endfor %}
+              </tr>
+
+              <!--============3.8 Machine capacity & Tonnage/year================-->
+              <tr class="table-primary section-main">
+                <td colspan="{{positions | length+1}}">
+                  <strong>3.8 Machine capacity & Tonnage/year</strong>
+                </td>
+              </tr>
+
+              <!--3.8.1 Tonnage/year (statistics)-->
+              <tr class="table-secondary section-sub">
+                <td colspan="{{positions| length+1}}">
+                  <strong>3.8.1 Tonnage/year (statistics)</strong>
+                </td>
+              </tr>
+
+              <!-- Material A EUR [Kg] Line 371-->
+              <tr>
+                <td>Material A EUR [Kg]</td>
+                {% for pos in positions %}
+                <td>
+                  <input 
+                    type="number"
+                    step="any" 
+                    class="form-control _3-8-1-material-a"
+                    data-pos={{pos.id}}
+                    name="_3_8_1_material_a[{{pos.id}}]"
+                    readonly
+                  />
+                </td>
+                {% endfor %}
+              </tr>
+
+              <!-- Material B EUR [Kg]-->
+              <tr>
+                <td>Material B EUR [Kg]</td>
+                {% for pos in positions %}
+                <td>
+                  <input 
+                    type="number"
+                    step="any" 
+                    class="form-control _3-8-1-material-b"
+                    data-pos={{pos.id}}
+                    name="_3_8_1_material_b[{{pos.id}}]"
+                    readonly
+                  />
+                </td>
+                {% endfor %}
+              </tr>
+
+              <!-- Material C [Kg]-->
+              <tr>
+                <td>Material C [Kg]</td>
+                {% for pos in positions %}
+                <td>
+                  <input 
+                    type="number"
+                    step="any" 
+                    class="form-control _3-8-1-material-c"
+                    data-pos={{pos.id}}
+                    name="_3_8_1_material_c[{{pos.id}}]"
+                    readonly
+                  />
+                </td>
+                {% endfor %}
+              </tr>
+
+              <!-- Material D [Kg]-->
+              <tr>
+                <td>Material D [Kg]</td>
+                {% for pos in positions %}
+                <td>
+                  <input 
+                    type="number"
+                    step="any" 
+                    class="form-control _3-8-1-material-d"
+                    data-pos={{pos.id}}
+                    name="_3_8_1_material_d[{{pos.id}}]"
+                    readonly
+                  />
+                </td>
+                {% endfor %}
+              </tr>
+
+              <!--3.8.2.1 Machine capacity - Material A-->
+              <tr class="table-secondary section-sub">
+                <td colspan="{{positions| length+1}}">
+                  <strong>3.8.2.1 Machine capacity - Material A</strong>
+                </td>
+              </tr>
+
+              <!-- Production days per year -->
+              <tr>
+                <td>Production days per year</td>
+                {% for pos in positions %}
+                <td>
+                  <input 
+                    type="number"
+                    step="any" 
+                    class="form-control _3-8-2-1-production-days-per-year"
+                    data-pos={{pos.id}}
+                    name="_3_8_2_1_production_days_per_year[{{pos.id}}]"
+                  />
+                </td>
+                {% endfor %}
+              </tr>
+
+              <!-- Number of shifts per day -->
+              <tr>
+                <td>Number of shifts per day</td>
+                {% for pos in positions %}
+                <td>
+                  <input 
+                    type="number"
+                    step="any" 
+                    class="form-control _3-8-2-1-number-of-shifts-per-day"
+                    data-pos={{pos.id}}
+                    name="_3_8_2_1_number_of_shifts_per_day[{{pos.id}}]"
+                  />
+                </td>
+                {% endfor %}
+              </tr>
+
+              <!-- Number of hours per shifts -->
+              <tr>
+                <td>Number of hours per shift</td>
+                {% for pos in positions %}
+                <td>
+                  <input 
+                    type="number"
+                    step="any" 
+                    class="form-control _3-8-2-1-number-of-hour-per-shift"
+                    data-pos={{pos.id}}
+                    name="_3_8_2_1_number_of_hour_per_shift[{{pos.id}}]"
+                  />
+                </td>
+                {% endfor %}
+              </tr>
+
+              <!-- Maximum allowed utilization extent -->
+              <tr>
+                <td>Maximum allowed utilization extent [%]</td>
+                {% for pos in positions %}
+                <td>
+                  <input 
+                    type="number"
+                    step="any" 
+                    class="form-control _3-8-2-1-maximum-allowed-utilization-extent"
+                    data-pos={{pos.id}}
+                    name="_3_8_2_1_maximum_allowed_utilization_extent[{{pos.id}}]"
+                  />
+                </td>
+                {% endfor %}
+              </tr>
+
+              <!-- Productive hours per year  -->
+              <tr>
+                <td>Productive hours per year [h]</td>
+                {% for pos in positions %}
+                <td>
+                  <input 
+                    type="number"
+                    step="any" 
+                    class="form-control _3-8-2-1-productive-hours-per-year"
+                    data-pos={{pos.id}}
+                    name="_3_8_2_1_productive_hours_per_year[{{pos.id}}]"
+                    readonly
+                  />
+                </td>
+                {% endfor %}
+              </tr>
+
+              <!-- Annual machine time per part nr. -->
+              <tr>
+                <td>Annual machine time per part nr. [h]</td>
+                {% for pos in positions %}
+                <td>
+                  <input 
+                    type="number"
+                    step="any" 
+                    class="form-control _3-8-2-1-annual-machine-time"
+                    data-pos={{pos.id}}
+                    name="_3_8_2_1_annual_machine_time[{{pos.id}}]"
+                    readonly
+                  />
+                </td>
+                {% endfor %}
+              </tr>
+
+              <!-- Machine utilization -->
+              <tr class="table-warning">
+                <td>Machine utilization [%]</td>
+                {% for pos in positions %}
+                <td>
+                  <input 
+                    type="number"
+                    step="any" 
+                    class="form-control _3-8-2-1-machine-utilization"
+                    data-pos={{pos.id}}
+                    name="_3_8_2_1_machine_utilization[{{pos.id}}]"
+                    readonly
+                  />
+                </td>
+                {% endfor %}
+              </tr>
+
+              <!-- Number of machines required -->
+              <tr>
+                <td>Number of machines required</td>
+                {% for pos in positions %}
+                <td>
+                  <input 
+                    type="number"
+                    step="any" 
+                    class="form-control _3-8-2-1-no-of-machines-req"
+                    data-pos={{pos.id}}
+                    name="_3_8_2_1_no_of_machines_req[{{pos.id}}]"
+                    readonly
+                  />
+                </td>
+                {% endfor %}
+              </tr>
+
+              <!--3.8.2.2 Machine capacity - Material B-->
+              <tr class="table-secondary section-sub">
+                <td colspan="{{positions| length+1}}">
+                  <strong>3.8.2.2 Machine capacity - Material B</strong>
+                </td>
+              </tr>
+
+              <!-- Production days per year -->
+              <tr>
+                <td>Production days per year</td>
+                {% for pos in positions %}
+                <td>
+                  <input 
+                    type="number"
+                    step="any" 
+                    class="form-control _3-8-2-2-production-days-per-year"
+                    data-pos={{pos.id}}
+                    name="_3_8_2_2_production_days_per_year[{{pos.id}}]"
+                  />
+                </td>
+                {% endfor %}
+              </tr>
+
+              <!-- Number of shifts per day -->
+              <tr>
+                <td>Number of shifts per day</td>
+                {% for pos in positions %}
+                <td>
+                  <input 
+                    type="number"
+                    step="any" 
+                    class="form-control _3-8-2-2-number-of-shifts-per-day"
+                    data-pos={{pos.id}}
+                    name="_3_8_2_2_number_of_shifts_per_day[{{pos.id}}]"
+                  />
+                </td>
+                {% endfor %}
+              </tr>
+
+              <!-- Number of hours per shifts -->
+              <tr>
+                <td>Number of hours per shift</td>
+                {% for pos in positions %}
+                <td>
+                  <input 
+                    type="number"
+                    step="any" 
+                    class="form-control _3-8-2-2-number-of-hour-per-shift"
+                    data-pos={{pos.id}}
+                    name="_3_8_2_2_number_of_hour_per_shift[{{pos.id}}]"
+                  />
+                </td>
+                {% endfor %}
+              </tr>
+
+              <!-- Maximum allowed utilization extent -->
+              <tr>
+                <td>Maximum allowed utilization extent [%]</td>
+                {% for pos in positions %}
+                <td>
+                  <input 
+                    type="number"
+                    step="any" 
+                    class="form-control _3-8-2-2-maximum-allowed-utilization-extent"
+                    data-pos={{pos.id}}
+                    name="_3_8_2_2_maximum_allowed_utilization_extent[{{pos.id}}]"
+                  />
+                </td>
+                {% endfor %}
+              </tr>
+
+              <!-- Productive hours per year  -->
+              <tr>
+                <td>Productive hours per year [h]</td>
+                {% for pos in positions %}
+                <td>
+                  <input 
+                    type="number"
+                    step="any" 
+                    class="form-control _3-8-2-2-productive-hours-per-year"
+                    data-pos={{pos.id}}
+                    name="_3_8_2_2_productive_hours_per_year[{{pos.id}}]"
+                    readonly
+                  />
+                </td>
+                {% endfor %}
+              </tr>
+
+              <!-- Annual machine time per part nr. -->
+              <tr>
+                <td>Annual machine time per part nr. [h]</td>
+                {% for pos in positions %}
+                <td>
+                  <input 
+                    type="number"
+                    step="any" 
+                    class="form-control _3-8-2-2-annual-machine-time"
+                    data-pos={{pos.id}}
+                    name="_3_8_2_2_annual_machine_time[{{pos.id}}]"
+                    readonly
+                  />
+                </td>
+                {% endfor %}
+              </tr>
+
+              <!-- Machine utilization -->
+              <tr class="table-warning">
+                <td>Machine utilization [%]</td>
+                {% for pos in positions %}
+                <td>
+                  <input 
+                    type="number"
+                    step="any" 
+                    class="form-control _3-8-2-2-machine-utilization"
+                    data-pos={{pos.id}}
+                    name="_3_8_2_2_machine_utilization[{{pos.id}}]"
+                    readonly
+                  />
+                </td>
+                {% endfor %}
+              </tr>
+
+              <!-- Number of machines required -->
+              <tr>
+                <td>Number of machines required</td>
+                {% for pos in positions %}
+                <td>
+                  <input 
+                    type="number"
+                    step="any" 
+                    class="form-control _3-8-2-2-no-of-machines-req"
+                    data-pos={{pos.id}}
+                    name="_3_8_2_2_no_of_machines_req[{{pos.id}}]"
+                    readonly
+                  />
+                </td>
+                {% endfor %}
+              </tr>
+
+          </tbody>
+        </table>
+      </div>
+      <button class="btn btn-danger btn-lg mt-4">Save Section 1</button>
+    </form>
+  </div>
+</div>
+<script src="{{ url_for('static', filename='js/calculationSheet.js') }}"></script>
+
+
+<!--Section 3-->
+<script>
+  const LABOUR_COST_PER_HOUR = {{ labour_cost_per_hour }};
+  const LABOUR_SETUP_COST_PER_HOUR = {{ Hourly_wage_setup_price }};
+  //const ASSEMBLY_COST_PER_HOUR = {{ assembly_cost_per_hour }};
+  window.ASSEMBLY_COST_PER_HOUR = {{ assembly_cost_per_hour | default(0) }};
+</script>
+
+<!-- Toggle Script -->
+<script>
+  function toggleQuotationForm() {
+    const card = document.getElementById("quotationFormCard");
+    card.classList.toggle("d-none");
+  }
+  function togglePartSpecificationForm() {
+    const card = document.getElementById("partSpecificationFormCard");
+    card.classList.toggle("d-none");
+  }
+</script>
+
+<style>
+  .table tr.table-dark td,
+  .table tr.table-secondary td {
+    font-size: 0.95rem;
+    letter-spacing: 0.5px;
+  }
+  /* Scroll container */
+  .table-scroll {
+    max-height: 75vh;
+    overflow-y: auto;
+    overflow-x: auto;
+  }
+
+  /* Sticky table header */
+  .table-scroll thead th {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    background: #f8f9fa; /* same as table-light */
+  }
+
+  /* Optional: Sticky section headers inside tbody */
+  .table-scroll tbody tr.table-dark td,
+  .table-scroll tbody tr.table-secondary td {
+    position: sticky;
+    top: 42px; /* height of thead */
+    z-index: 4;
+  }
+  .table-primary td {
+    background-color: #d1ecf1 !important;
+    font-size: 1rem;
+  }
+
+  .table-secondary td {
+    background-color: #e9ecef !important;
+    font-weight: 600;
+  }
+
+  .table tbody tr td:first-child {
+    font-weight: 500;
+  }
+  /* Main section header (1.1) */
+  .section-main td {
+    position: sticky;
+    top: 42px; /* height of thead */
+    z-index: 90;
+    background: #cfe2ff;
+  }
+
+  /* Sub-section headers */
+  .section-sub td {
+    position: sticky;
+    top: 82px; /* thead + main section */
+    z-index: 80;
+    background: #e9ecef;
+  }
+  td {
+    min-width: 200px;
+  }
+</style>
+{% endblock %}

@@ -1,0 +1,66 @@
+{% extends "base.html" %} {% block title %}Material Cost{% endblock %} {% block
+content %}
+<!--====================================================-->
+<h4 class="text-danger mb-2">Machinery Cost</h4>
+
+<form method="get">
+  <!-- keep previous selections -->
+  <input type="hidden" name="material_id_a" value="{{ selected_id_mat_a }}">
+  <input type="hidden" name="material_id_b" value="{{ selected_id_mat_b }}">
+  <input type="hidden" name="material_id_c" value="{{ selected_id_mat_c }}">
+  <input type="hidden" name="labour_id" value="{{ selected_labour_id }}">
+
+  <div class="table-responsive">
+    <table class="table table-bordered table-sm align-middle">
+      <thead class="table-danger">
+        <tr>
+          <th class="text-center">Machine Nr.</th>
+          <th class="text-center" style="min-width:220px">Machine title</th>
+          <th class="text-center">Machine rate / h</th>
+          <th class="text-center">Clamping [t]</th>
+          <th class="text-center">Manufacturer / type</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <tr>
+          {% if selected_machine_row %}
+            {% set r = selected_machine_row[0] %}
+            <td class="text-center">{{ r.machine_nr }}</td>
+          {% else %}
+            <td class="text-center text-muted">–</td>
+          {% endif %}
+
+          <!-- MACHINE TITLE SELECT -->
+          <td>
+            <select
+              name="selected_machine"
+              class="form-select form-select-sm text-success"
+              onchange="this.form.submit()"
+            >
+              <option value="">-- Select Machine --</option>
+              {% for m in machines %}
+                <option value="{{ m.id }}"
+                  {% if selected_machine_id == m.id|string %}selected{% endif %}
+                >
+                  {{ m.machine_title }}
+                </option>
+              {% endfor %}
+            </select>
+          </td>
+
+          {% if selected_machine_row %}
+            <td class="text-center text-success">{{ r.machine_rate_per_hour }}</td>
+            <td class="text-center text-success">{{ r.clamping_t }}</td>
+            <td class="text-center text-success">{{ r.manufacturer_type }}</td>
+          {% else %}
+            <td colspan="3" class="text-center text-muted">
+              Please select a machine
+            </td>
+          {% endif %}
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</form>
+{% endblock %}

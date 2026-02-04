@@ -1,0 +1,545 @@
+{% extends "base.html" %} {% block title %}Material Cost{% endblock %} {% block
+content %}
+
+<h4 class="text-danger mb-3">Quotation Details</h4>
+
+<!-- Toggle Button -->
+<button
+  type="button"
+  class="btn btn-outline-danger mb-3"
+  onclick="toggleQuotationForm()"
+>
+  + Add Quotation
+</button>
+
+<!-- Collapsible Form Card -->
+<div id="quotationFormCard" class="card shadow-sm d-none">
+  <div class="card-body">
+    <form method="POST" action="/save_quotation">
+      <div class="row mb-3">
+        <div class="col-md-6">
+          <label class="form-label">Internal Project</label>
+          <input
+            type="text"
+            name="internal_Project"
+            class="form-control"
+            required
+          />
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label">Vehicle Code</label>
+          <input type="text" name="vehicle_code" class="form-control" />
+        </div>
+      </div>
+
+      <div class="row mb-3">
+        <div class="col-md-6">
+          <label class="form-label">OEM SOP</label>
+          <input type="text" name="OEM_SOP" class="form-control" />
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label">Henkel PL</label>
+          <input type="text" name="henkel_PL" class="form-control" />
+        </div>
+      </div>
+
+      <div class="row mb-3">
+        <div class="col-md-6">
+          <label class="form-label">Quotation Date</label>
+          <input type="date" name="quotation_date" class="form-control" />
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label">Quotation Revision Level</label>
+          <input
+            type="number"
+            name="quotation_rev_level"
+            class="form-control"
+          />
+        </div>
+      </div>
+
+      <div class="row mb-3">
+        <div class="col-md-6">
+          <label class="form-label">Supplier</label>
+          <input type="text" name="supplier" class="form-control" />
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label">Supplier Contact</label>
+          <input
+            type="text"
+            name="supplier_contact"
+            class="form-control"
+            maxlength="15"
+          />
+        </div>
+      </div>
+
+      <div class="row mb-3">
+        <div class="col-md-6">
+          <label class="form-label">LCUR for Quotation</label>
+          <input type="text" name="LCUR_for_quotation" class="form-control" />
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label">LCUR Abbreviation</label>
+          <input type="text" name="LCUR_abbreviation" class="form-control" />
+        </div>
+      </div>
+
+      <div class="text-end">
+        <button type="submit" class="btn btn-danger">Save Quotation</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!--new form-->
+<h4 class="text-danger mb-3">Part specifications</h4>
+<!-- Toggle Button -->
+<button
+  type="button"
+  class="btn btn-outline-danger mb-3"
+  onclick="togglePartSpecificationForm()"
+>
+  + Part specifications
+</button>
+
+<div id="partSpecificationFormCard" class="card shadow-sm d-none">
+  <div class="card-body">
+    <form method="POST" action="/save_POS1_POS2">
+      <table class="table table-bordered align-middle">
+        <thead class="table-light text-center">
+          <tr>
+            <th style="width: 35%">1.1 Project Details per Part</th>
+            <th style="width: 32%">Pos.1</th>
+            <th style="width: 32%">Pos.2</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr>
+            <td>Section</td>
+            <td>
+              <input type="text" name="section_pos1" class="form-control" />
+            </td>
+            <td>
+              <input type="text" name="section_pos2" class="form-control" />
+            </td>
+          </tr>
+
+          <tr>
+            <td>Design for offer</td>
+            <td>
+              <input
+                type="text"
+                name="design_for_offer_pos1"
+                class="form-control"
+              />
+            </td>
+            <td>
+              <input
+                type="text"
+                name="design_for_offer_pos2"
+                class="form-control"
+              />
+            </td>
+          </tr>
+
+          <tr>
+            <td>Customer Part number</td>
+            <td>
+              <input
+                type="text"
+                name="customer_part_number_pos1"
+                class="form-control"
+              />
+            </td>
+            <td>
+              <input
+                type="text"
+                name="customer_part_number_pos2"
+                class="form-control"
+              />
+            </td>
+          </tr>
+
+          <tr>
+            <td>Customer Part name</td>
+            <td>
+              <input
+                type="text"
+                name="customer_part_name_pos1"
+                class="form-control"
+              />
+            </td>
+            <td>
+              <input
+                type="text"
+                name="customer_part_name_pos2"
+                class="form-control"
+              />
+            </td>
+          </tr>
+
+          <tr>
+            <td>Henkel Part- / IDH-Number</td>
+            <td>
+              <input type="text" name="idh_number_pos1" class="form-control" />
+            </td>
+            <td>
+              <input type="text" name="idh_number_pos2" class="form-control" />
+            </td>
+          </tr>
+
+          <tr>
+            <td>Henkel IMDS-Number</td>
+            <td>
+              <input
+                type="number"
+                name="imds_number_pos1"
+                class="form-control"
+              />
+            </td>
+            <td>
+              <input
+                type="number"
+                name="imds_number_pos2"
+                class="form-control"
+              />
+            </td>
+          </tr>
+
+          <tr>
+            <td>Henkel PN / Design level</td>
+            <td>
+              <input
+                type="text"
+                name="design_level_pos1"
+                class="form-control"
+              />
+            </td>
+            <td>
+              <input
+                type="text"
+                name="design_level_pos2"
+                class="form-control"
+              />
+            </td>
+          </tr>
+
+          <tr>
+            <td>Part concept</td>
+            <td>
+              <input
+                type="text"
+                name="part_concept_pos1"
+                class="form-control"
+              />
+            </td>
+            <td>
+              <input
+                type="text"
+                name="part_concept_pos2"
+                class="form-control"
+              />
+            </td>
+          </tr>
+
+          <tr>
+            <td>Design concept</td>
+            <td>
+              <input
+                type="text"
+                name="design_concept_pos1"
+                class="form-control"
+              />
+            </td>
+            <td>
+              <input
+                type="text"
+                name="design_concept_pos2"
+                class="form-control"
+              />
+            </td>
+          </tr>
+
+          <tr>
+            <td>Clip design</td>
+            <td>
+              <input type="text" name="clip_design_pos1" class="form-control" />
+            </td>
+            <td>
+              <input type="text" name="clip_design_pos2" class="form-control" />
+            </td>
+          </tr>
+
+          <tr>
+            <td>Number of Clips</td>
+            <td>
+              <input
+                type="number"
+                name="number_of_clips_pos1"
+                class="form-control"
+              />
+            </td>
+            <td>
+              <input
+                type="number"
+                name="number_of_clips_pos2"
+                class="form-control"
+              />
+            </td>
+          </tr>
+
+          <tr>
+            <td>Gap to the panel (nominal)</td>
+            <td>
+              <input type="text" name="gap_panel_pos1" class="form-control" />
+            </td>
+            <td>
+              <input type="text" name="gap_panel_pos2" class="form-control" />
+            </td>
+          </tr>
+
+          <tr>
+            <td>Design features</td>
+            <td>
+              <input
+                type="text"
+                name="design_features_pos1"
+                class="form-control"
+              />
+            </td>
+            <td>
+              <input
+                type="text"
+                name="design_features_pos2"
+                class="form-control"
+              />
+            </td>
+          </tr>
+
+          <tr>
+            <td>Life time [years]</td>
+            <td>
+              <input type="number" name="lifetime_pos1" class="form-control" />
+            </td>
+            <td>
+              <input type="number" name="lifetime_pos2" class="form-control" />
+            </td>
+          </tr>
+
+          <!-- ================= Plant Car Derivatives ================= -->
+          <tr class="table-secondary text-center">
+            <td colspan="3">
+              <strong>Plant Car Derivatives [(avg.) cars/a]</strong>
+            </td>
+          </tr>
+
+          <!-- Derivative 1 -->
+          <tr>
+            <td>
+              <input
+                type="checkbox"
+                class="derivative-check"
+                data-row="1"
+                checked
+              />
+              Plant / Car / Derivative 1
+            </td>
+            <td>
+              <input
+                type="number"
+                name="plant_derivative1_pos1"
+                class="form-control plant-pos1"
+                data-row="1"
+              />
+            </td>
+            <td>
+              <input
+                type="number"
+                name="plant_derivative1_pos2"
+                class="form-control plant-pos2"
+                data-row="1"
+              />
+            </td>
+          </tr>
+
+          <!-- Derivative 2 -->
+          <tr>
+            <td>
+              <input type="checkbox" class="derivative-check" data-row="2" />
+              Plant / Car / Derivative 2
+            </td>
+            <td>
+              <input
+                type="number"
+                name="plant_derivative2_pos1"
+                class="form-control plant-pos1"
+                data-row="2"
+              />
+            </td>
+            <td>
+              <input
+                type="number"
+                name="plant_derivative2_pos2"
+                class="form-control plant-pos2"
+                data-row="2"
+              />
+            </td>
+          </tr>
+
+          <!-- Derivative 3 -->
+          <tr>
+            <td>
+              <input type="checkbox" class="derivative-check" data-row="3" />
+              Plant / Car / Derivative 3
+            </td>
+            <td>
+              <input
+                type="number"
+                name="plant_derivative3_pos1"
+                class="form-control plant-pos1"
+                data-row="3"
+              />
+            </td>
+            <td>
+              <input
+                type="number"
+                name="plant_derivative3_pos2"
+                class="form-control plant-pos2"
+                data-row="3"
+              />
+            </td>
+          </tr>
+
+          <!-- TOTAL -->
+          <tr class="table-secondary">
+            <td><strong>Total (avg.) cars / year</strong></td>
+            <td>
+              <input
+                type="number"
+                name="plant_total_pos1"
+                id="plant_total_pos1"
+                class="form-control"
+                readonly
+              />
+            </td>
+            <td>
+              <input
+                type="number"
+                name="plant_total_pos2"
+                id="plant_total_pos2"
+                class="form-control"
+                readonly
+              />
+            </td>
+          </tr>
+
+          <tr>
+            <td>Parts / Car [pieces]</td>
+            <td>
+              <input
+                type="number"
+                name="parts_per_car_pos1"
+                class="form-control"
+              />
+            </td>
+            <td>
+              <input
+                type="number"
+                name="parts_per_car_pos2"
+                class="form-control"
+              />
+            </td>
+          </tr>
+
+          <tr>
+            <td>Parts / Year (+/-30%) [pieces]</td>
+            <td>
+              <input
+                type="number"
+                name="parts_per_year_pos1"
+                class="form-control"
+              />
+            </td>
+            <td>
+              <input
+                type="number"
+                name="parts_per_year_pos2"
+                class="form-control"
+              />
+            </td>
+          </tr>
+
+          <tr>
+            <td>Comments</td>
+            <td>
+              <textarea
+                name="comments_pos1"
+                class="form-control"
+                rows="3"
+              ></textarea>
+            </td>
+            <td>
+              <textarea
+                name="comments_pos2"
+                class="form-control"
+                rows="3"
+              ></textarea>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="text-end">
+        <button type="submit" class="btn btn-danger">Save POS1 & POS2</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  function calculatePlantTotals() {
+    let totalPos1 = 0;
+    let totalPos2 = 0;
+
+    document.querySelectorAll(".derivative-check").forEach((chk) => {
+      const row = chk.dataset.row;
+
+      if (chk.checked) {
+        const pos1 =
+          document.querySelector(`.plant-pos1[data-row="${row}"]`)?.value || 0;
+
+        const pos2 =
+          document.querySelector(`.plant-pos2[data-row="${row}"]`)?.value || 0;
+
+        totalPos1 += Number(pos1);
+        totalPos2 += Number(pos2);
+      }
+    });
+
+    document.getElementById("plant_total_pos1").value = totalPos1;
+    document.getElementById("plant_total_pos2").value = totalPos2;
+  }
+
+  // Trigger recalculation
+  document.addEventListener("input", calculatePlantTotals);
+  document.addEventListener("change", calculatePlantTotals);
+</script>
+<!-- Toggle Script -->
+<script>
+  function toggleQuotationForm() {
+    const card = document.getElementById("quotationFormCard");
+    card.classList.toggle("d-none");
+  }
+  function togglePartSpecificationForm() {
+    const card = document.getElementById("partSpecificationFormCard");
+    card.classList.toggle("d-none");
+  }
+</script>
+{% endblock %}

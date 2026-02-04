@@ -1,0 +1,1046 @@
+{% extends "base.html" %} {% block title %}Material Cost{% endblock %} {% block
+content %}
+
+<div class="d-flex gap-2 mb-4">
+  <button class="btn btn-danger" onclick="toggleQuotationForm()">
+    Quotation
+  </button>
+
+  <button
+    class="btn btn-outline-danger"
+    onclick="togglePartSpecificationForm()"
+    {%
+    if
+    not
+    quotation_id
+    %}disabled{%
+    endif
+    %}
+  >
+    Part Specification
+  </button>
+
+  <button
+    class="btn btn-outline-secondary"
+    {%
+    if
+    not
+    positions
+    %}disabled{%
+    endif
+    %}
+  >
+    Costing
+  </button>
+</div>
+
+{% if not quotation_id %}
+<small class="text-muted"> Save quotation to enable Part Specification </small>
+{% endif %}
+
+<!-- Toggle Button -->
+{% if not quotation_id %}
+<h4 class="text-danger mb-3">Quotation Details</h4>
+<button class="btn btn-outline-danger mb-3" onclick="toggleQuotationForm()">
+  + Add Quotation
+</button>
+{% endif %}
+
+<!-- Quotation Form Card -->
+<div id="quotationFormCard" class="card shadow-sm d-none">
+  <div class="card-body">
+    <form method="POST" action="/save_quotation">
+      <div class="row mb-3">
+        <div class="col-md-6">
+          <label class="form-label">Internal Project</label>
+          <input
+            type="text"
+            name="internal_Project"
+            class="form-control"
+            required
+          />
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label">Vehicle Code</label>
+          <input type="text" name="vehicle_code" class="form-control" />
+        </div>
+      </div>
+
+      <div class="row mb-3">
+        <div class="col-md-6">
+          <label class="form-label">OEM SOP</label>
+          <input type="text" name="OEM_SOP" class="form-control" />
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label">Henkel PL</label>
+          <input type="text" name="henkel_PL" class="form-control" />
+        </div>
+      </div>
+
+      <div class="row mb-3">
+        <div class="col-md-6">
+          <label class="form-label">Quotation Date</label>
+          <input type="date" name="quotation_date" class="form-control" />
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label">Quotation Revision Level</label>
+          <input
+            type="number"
+            name="quotation_rev_level"
+            class="form-control"
+          />
+        </div>
+      </div>
+
+      <div class="row mb-3">
+        <div class="col-md-6">
+          <label class="form-label">Supplier</label>
+          <input type="text" name="supplier" class="form-control" />
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label">Supplier Contact</label>
+          <input
+            type="text"
+            name="supplier_contact"
+            class="form-control"
+            maxlength="15"
+          />
+        </div>
+      </div>
+
+      <div class="row mb-3">
+        <div class="col-md-6">
+          <label class="form-label">LCUR for Quotation</label>
+          <input type="text" name="LCUR_for_quotation" class="form-control" />
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label">LCUR Abbreviation</label>
+          <input type="text" name="LCUR_abbreviation" class="form-control" />
+        </div>
+      </div>
+
+      <div class="text-end">
+        <button type="submit" class="btn btn-danger">Save Quotation</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!--Part specifications form-->
+<!-- Toggle Button -->
+{% if quotation_id %}
+<h4 class="text-danger mb-3">Part specifications</h4>
+
+<button
+  type="button"
+  class="btn btn-outline-danger mb-3"
+  onclick="togglePartSpecificationForm()"
+>
+  + Part specifications
+</button>
+{% endif %}
+
+<div id="partSpecificationFormCard" class="card shadow-sm d-none">
+  <div class="card-body">
+    <h5 class="text-danger">Generate Positions</h5>
+    {% if quotation_id %}
+    <form method="POST" action="/generate_positions/{{ quotation_id }}">
+      <label>No. of Positions</label>
+      <input type="number" name="pos_count" min="1" max="100" required />
+      <button class="btn btn-sm btn-danger">Generate</button>
+    </form>
+    {% endif %}
+
+    <form method="POST" action="/save_section_1_1/{{ quotation_id }}">
+      <h4 class="bg-secondary text-light mt-2">1.1 Project Details per Part</h4>
+      <div class="table-responsive table-scroll">
+        <table class="table table-bordered align-middle mt-4">
+          <thead class="table-light text-center">
+            <tr>
+              <th>POS Nr.</th>
+              {% for pos in positions %}
+              <th>Pos.{{ pos.pos_no }}</th>
+              {% endfor %}
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr class="table-secondary">
+              <td colspan="{{ positions|length + 1 }}">
+                <strong>Part Identification</strong>
+              </td>
+            </tr>
+            <tr>
+              <td>Section</td>
+              {% for pos in positions %}
+              <td>
+                <input name="section[{{ pos.id }}]" class="form-control" />
+              </td>
+              {% endfor %}
+            </tr>
+            <tr>
+              <td>Design for offer</td>
+              {% for pos in positions %}
+              <td>
+                <input
+                  name="design_for_offer[{{ pos.id }}]"
+                  class="form-control"
+                />
+              </td>
+              {% endfor %}
+            </tr>
+            <tr>
+              <td>Customer Part Number</td>
+              {% for pos in positions %}
+              <td>
+                <input
+                  name="customer_part_number[{{ pos.id }}]"
+                  class="form-control"
+                />
+              </td>
+              {% endfor %}
+            </tr>
+            <tr>
+              <td>Customer Part Name</td>
+              {% for pos in positions %}
+              <td>
+                <input
+                  name="customer_part_name[{{ pos.id }}]"
+                  class="form-control"
+                />
+              </td>
+              {% endfor %}
+            </tr>
+            <tr>
+              <td>Henkel IDH Number</td>
+              {% for pos in positions %}
+              <td>
+                <input name="idh_number[{{ pos.id }}]" class="form-control" />
+              </td>
+              {% endfor %}
+            </tr>
+            <tr>
+              <td>IMDS Number</td>
+              {% for pos in positions %}
+              <td>
+                <input
+                  type="number"
+                  name="imds_number[{{ pos.id }}]"
+                  class="form-control"
+                />
+              </td>
+              {% endfor %}
+            </tr>
+            <!--======================-->
+            <tr class="table-secondary">
+              <td colspan="{{ positions|length + 1 }}">
+                <strong>Design & Concept</strong>
+              </td>
+            </tr>
+            <tr>
+              <td>Henkel PN / Design level</td>
+              {% for pos in positions %}
+              <td>
+                <input
+                  type="number"
+                  name="design_level[{{ pos.id }}]"
+                  class="form-control"
+                />
+              </td>
+              {% endfor %}
+            </tr>
+            <tr>
+              <td>Part concept</td>
+              {% for pos in positions %}
+              <td>
+                <select name="part_concept[{{ pos.id }}]" class="form-control">
+                  <option value="">-- Select --</option>
+                  {% for pc in part_concepts %}
+                  <option value="{{ pc.id }}">{{ pc.partConceptName }}</option>
+                  {% endfor %}
+                </select>
+              </td>
+              {% endfor %}
+            </tr>
+            <tr>
+              <td>Design Concept</td>
+              {% for pos in positions %}
+              <td>
+                <select
+                  name="design_concept[{{ pos.id }}]"
+                  class="form-control"
+                >
+                  <option value="">-- Select --</option>
+                  {% for dc in design_concepts %}
+                  <option value="{{ dc.id }}">
+                    {{ dc.designConceptName }}
+                  </option>
+                  {% endfor %}
+                </select>
+              </td>
+              {% endfor %}
+            </tr>
+            <tr>
+              <td>Clip Design</td>
+              {% for pos in positions %}
+              <td>
+                <input
+                  type="text"
+                  name="clip_design[{{ pos.id }}]"
+                  class="form-control"
+                />
+              </td>
+              {% endfor %}
+            </tr>
+            <tr>
+              <td>Number of Clips</td>
+              {% for pos in positions %}
+              <td>
+                <input
+                  type="number"
+                  name="number_of_clips[{{ pos.id }}]"
+                  class="form-control"
+                />
+              </td>
+              {% endfor %}
+            </tr>
+            <tr>
+              <td>Gap to the panel</td>
+              {% for pos in positions %}
+              <td>
+                <input
+                  type="number"
+                  name="gap_to_panel[{{ pos.id }}]"
+                  class="form-control"
+                />
+              </td>
+              {% endfor %}
+            </tr>
+            <tr>
+              <td>Design Features</td>
+              {% for pos in positions %}
+              <td>
+                <input
+                  type="number"
+                  name="design_features[{{ pos.id }}]"
+                  class="form-control"
+                />
+              </td>
+              {% endfor %}
+            </tr>
+            <tr>
+              <td>Life time (years)</td>
+              {% for pos in positions %}
+              <td>
+                <input
+                  type="number"
+                  name="lifetime_years[{{ pos.id }}]"
+                  class="form-control"
+                />
+              </td>
+              {% endfor %}
+            </tr>
+            <!--=========================-->
+            <tr class="table-secondary">
+              <td colspan="{{ positions|length + 1 }}">
+                <strong>Production Volume – Plant / Car / Derivatives</strong>
+              </td>
+            </tr>
+            <!--pos_plant_derivatives-->
+            {% for d in range(1, 9) %}
+            <tr>
+              <td>Plant / Car / Derivat {{ d }} [(avg.) cars/a]</td>
+
+              {% for pos in positions %}
+              <td class="text-center">
+                <div class="d-flex gap-2 align-items-center">
+                  <input
+                    type="checkbox"
+                    class="form-check-input derivative-check"
+                    data-pos="{{ pos.id }}"
+                    data-derivative="{{ d }}"
+                    name="derivative_selected[{{ pos.id }}][{{ d }}]"
+                    onchange="this.nextElementSibling.disabled = !this.checked;calculatePlantTotals();"
+                  />
+
+                  <input
+                    type="number"
+                    class="form-control plant-input"
+                    name="derivative_value[{{ pos.id }}][{{ d }}]"
+                    data-pos="{{ pos.id }}"
+                    data-derivative="{{ d }}"
+                    value="0"
+                    min="0"
+                    disabled
+                    oninput="calculatePlantTotals()"
+                  />
+                </div>
+              </td>
+              {% endfor %}
+            </tr>
+            {% endfor %}
+            <tr>
+              <td><strong>Total (avg.) cars / a</strong></td>
+
+              {% for pos in positions %}
+              <td>
+                <input
+                  type="number"
+                  class="form-control plant-total"
+                  id="plant_total_{{ pos.id }}"
+                  data-pos="{{ pos.id }}"
+                  value="0"
+                  readonly
+                />
+              </td>
+              {% endfor %}
+            </tr>
+            <!--pos_plant_derivatives-->
+            <!--=========================-->
+            <tr class="table-secondary">
+              <td colspan="{{ positions|length + 1 }}">
+                <strong>Annual Quantities</strong>
+              </td>
+            </tr>
+            <tr>
+              <td>Parts / Car</td>
+              {% for pos in positions %}
+              <td>
+                <input
+                  type="number"
+                  name="parts_per_car[{{ pos.id }}]"
+                  class="form-control parts-per-car"
+                  data-pos="{{ pos.id }}"
+                />
+              </td>
+              {% endfor %}
+            </tr>
+            <tr>
+              <td>Parts / Year (+/- 30%)</td>
+              {% for pos in positions %}
+              <td>
+                <input
+                  type="number"
+                  name="parts_per_year[{{ pos.id }}]"
+                  class="form-control parts-per-year"
+                  data-pos="{{ pos.id }}"
+                  readonly
+                />
+              </td>
+              {% endfor %}
+            </tr>
+            <tr class="table-secondary">
+              <td colspan="{{ positions|length + 1 }}">
+                <strong>Comments</strong>
+              </td>
+            </tr>
+            <tr>
+              <td>Comments</td>
+              {% for pos in positions %}
+              <td>
+                <textarea
+                  name="comments[{{ pos.id }}]"
+                  class="form-control"
+                ></textarea>
+              </td>
+              {% endfor %}
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <button class="btn btn-danger">Save Section 1.1</button>
+    </form>
+
+    <form method="POST" action="/save_section_1_2/{{ quotation_id }}">
+      <h4 class="bg-secondary text-light mt-4">1.2 Weight per Part</h4>
+
+      <div class="table-responsive table-scroll">
+        <table class="table table-bordered align-middle mt-3">
+          <thead class="table-light text-center">
+            <tr>
+              <th>POS Nr.</th>
+              {% for pos in positions %}
+              <th>Pos.{{ pos.pos_no }}</th>
+              {% endfor %}
+            </tr>
+          </thead>
+          <tbody>
+            <!-- ================= Material A ================= -->
+            <tr class="table-secondary">
+              <td colspan="{{ positions|length + 1 }}">
+                <strong>Material A</strong>
+              </td>
+            </tr>
+            <tr>
+              <td>Material</td>
+              {% for pos in positions %}
+              <td>
+                <select
+                  name="material_a[{{ pos.id }}]"
+                  class="form-control material-select"
+                  data-type="a"
+                  data-pos="{{ pos.id }}"
+                >
+                  <option value="">-- Select Material --</option>
+                  {% for m in materials_a %}
+                  <option
+                    value="{{ m.Material_A }}"
+                    data-density="{{ m.Density_kg_dm3 }}"
+                  >
+                    {{ m.Material_A }}
+                  </option>
+                  {% endfor %}
+                </select>
+              </td>
+              {% endfor %}
+            </tr>
+            <tr>
+              <td>Density (g/cm³)</td>
+              {% for pos in positions %}
+              <td>
+                <input
+                  type="number"
+                  step="0.00001"
+                  name="density_mat_a[{{ pos.id }}]"
+                  class="form-control density-input"
+                  data-type="a"
+                  data-pos="{{ pos.id }}"
+                  readonly
+                />
+              </td>
+              {% endfor %}
+            </tr>
+            <tr>
+              <td>Volume (cm³)</td>
+              {% for pos in positions %}
+              <td>
+                <input
+                  type="number"
+                  step="0.001"
+                  name="volume_mat_a[{{ pos.id }}]"
+                  class="form-control volume-input"
+                  data-type="a"
+                  data-pos="{{ pos.id }}"
+                />
+              </td>
+              {% endfor %}
+            </tr>
+            <tr>
+              <td>Weight (g)</td>
+              {% for pos in positions %}
+              <td>
+                <input
+                  readonly
+                  name="weight_mat_a[{{ pos.id }}]"
+                  class="form-control weight-input"
+                  data-type="a"
+                  data-pos="{{ pos.id }}"
+                />
+              </td>
+              {% endfor %}
+            </tr>
+            <!-- ================= Material B ================= -->
+            <tr class="table-secondary">
+              <td colspan="{{ positions|length + 1 }}">
+                <strong>Material B</strong>
+              </td>
+            </tr>
+            <tr>
+              <td>Material</td>
+              {% for pos in positions %}
+              <td>
+                <select
+                  name="material_b[{{ pos.id }}]"
+                  class="form-control material-select"
+                  data-type="b"
+                  data-pos="{{ pos.id }}"
+                >
+                  <option value="">-- Select Material --</option>
+                  {% for m in materials_b %}
+                  <option
+                    value="{{ m.Material_B }}"
+                    data-density="{{ m.Density_kg_dm3 }}"
+                  >
+                    {{ m.Material_B }}
+                  </option>
+                  {% endfor %}
+                </select>
+              </td>
+              {% endfor %}
+            </tr>
+            <tr>
+              <td>Density (g/cm³)</td>
+              {% for pos in positions %}
+              <td>
+                <input
+                  type="number"
+                  step="0.00001"
+                  name="density_mat_b[{{ pos.id }}]"
+                  class="form-control density-input"
+                  data-type="b"
+                  data-pos="{{ pos.id }}"
+                  readonly
+                />
+              </td>
+              {% endfor %}
+            </tr>
+            <tr>
+              <td>Volume (cm³)</td>
+              {% for pos in positions %}
+              <td>
+                <input
+                  type="number"
+                  step="0.001"
+                  name="volume_mat_b[{{ pos.id }}]"
+                  class="form-control volume-input"
+                  data-type="b"
+                  data-pos="{{ pos.id }}"
+                />
+              </td>
+              {% endfor %}
+            </tr>
+            <tr>
+              <td>Weight (g)</td>
+              {% for pos in positions %}
+              <td>
+                <input
+                  readonly
+                  name="weight_mat_b[{{ pos.id }}]"
+                  class="form-control weight-input"
+                  data-type="b"
+                  data-pos="{{ pos.id }}"
+                />
+              </td>
+              {% endfor %}
+            </tr>
+            <!-- ================= Material C ================= -->
+            <tr class="table-secondary">
+              <td colspan="{{ positions|length + 1 }}">
+                <strong>Material C</strong>
+              </td>
+            </tr>
+            <tr>
+              <td>Material</td>
+              {% for pos in positions %}
+              <td>
+                <select
+                  name="material_c[{{ pos.id }}]"
+                  class="form-control material-select"
+                  data-type="c"
+                  data-pos="{{ pos.id }}"
+                >
+                  <option value="">-- Select Material --</option>
+                  {% for m in materials_c %}
+                  <option
+                    value="{{ m.Material_C }}"
+                    data-density="{{ m.Density_kg_dm3 }}"
+                  >
+                    {{ m.Material_C }}
+                  </option>
+                  {% endfor %}
+                </select>
+              </td>
+              {% endfor %}
+            </tr>
+            <tr>
+              <td>Density (g/cm³)</td>
+              {% for pos in positions %}
+              <td>
+                <input
+                  type="number"
+                  step="0.00001"
+                  name="density_mat_c[{{ pos.id }}]"
+                  class="form-control density-input"
+                  data-type="c"
+                  data-pos="{{ pos.id }}"
+                  readonly
+                />
+              </td>
+              {% endfor %}
+            </tr>
+            <tr>
+              <td>Volume (cm³)</td>
+              {% for pos in positions %}
+              <td>
+                <input
+                  type="number"
+                  step="0.001"
+                  name="volume_mat_c[{{ pos.id }}]"
+                  class="form-control volume-input"
+                  data-type="c"
+                  data-pos="{{ pos.id }}"
+                />
+              </td>
+              {% endfor %}
+            </tr>
+            <tr>
+              <td>Weight (g)</td>
+              {% for pos in positions %}
+              <td>
+                <input
+                  readonly
+                  name="weight_mat_c[{{ pos.id }}]"
+                  class="form-control weight-input"
+                  data-type="c"
+                  data-pos="{{ pos.id }}"
+                />
+              </td>
+              {% endfor %}
+            </tr>
+            <!-- ================= Material D ================= -->
+            <tr class="table-secondary">
+              <td colspan="{{ positions|length + 1 }}">
+                <strong>Material D</strong>
+              </td>
+            </tr>
+            <tr>
+              <td>Material</td>
+              {% for pos in positions %}
+              <td>
+                <input name="material_d[{{ pos.id }}]" class="form-control" />
+              </td>
+              {% endfor %}
+            </tr>
+            <tr>
+              <td>Weight (g)</td>
+              {% for pos in positions %}
+              <td>
+                <input
+                  type="number"
+                  step="0.001"
+                  name="weight_mat_d[{{ pos.id }}]"
+                  class="form-control weight-d"
+                  data-pos="{{ pos.id }}"
+                />
+              </td>
+              {% endfor %}
+            </tr>
+            <!-- ================= TOTAL Weight / Part (g)================= -->
+            <tr class="table-warning text-light">
+              <td><strong>Total Weight / Part (g)</strong></td>
+              {% for pos in positions %}
+              <td>
+                <input
+                  readonly
+                  name="total_weight[{{ pos.id }}]"
+                  class="form-control total-weight-part"
+                  data-pos="{{ pos.id }}"
+                />
+              </td>
+              {% endfor %}
+            </tr>
+            <!-- ================= Weight / car ================= -->
+            <tr class="table-secondary">
+              <td colspan="{{ positions|length + 1 }}">
+                <strong>Weight / Car</strong>
+              </td>
+            </tr>
+            <tr>
+              <td>Polyamide</td>
+              {% for pos in positions %}
+              <td>
+                <input
+                  name="polyamide_weight_per_car[{{ pos.id }}]"
+                  class="form-control polyamide"
+                  data-pos="{{ pos.id }}"
+                />
+              </td>
+              {% endfor %}
+            </tr>
+            <tr>
+              <td>Terophon / Terocore</td>
+              {% for pos in positions %}
+              <td>
+                <input
+                  name="terophon_terocore_weight_per_car[{{ pos.id }}]"
+                  class="form-control terophon"
+                  data-pos="{{ pos.id }}"
+                />
+              </td>
+              {% endfor %}
+            </tr>
+            <tr>
+              <td>Steel</td>
+              {% for pos in positions %}
+              <td>
+                <input
+                  name="steel_weight_per_car[{{ pos.id }}]"
+                  class="form-control steel"
+                  data-pos="{{ pos.id }}"
+                />
+              </td>
+              {% endfor %}
+            </tr>
+            <tr>
+              <td>Others</td>
+              {% for pos in positions %}
+              <td>
+                <input
+                  name="other_mat_weight_per_car[{{ pos.id }}]"
+                  class="form-control others"
+                  data-pos="{{ pos.id }}"
+                />
+              </td>
+              {% endfor %}
+            </tr>
+            <!-- ================= TOTAL Weight / Car (g)================= -->
+            <tr class="table-warning text-opacity-75 text-light">
+              <td><strong>Total Weight / Car (g)</strong></td>
+              {% for pos in positions %}
+              <td>
+                <input
+                  readonly
+                  name="total_weight_per_car[{{ pos.id }}]"
+                  class="form-control total-weight-car"
+                  data-pos="{{ pos.id }}"
+                />
+              </td>
+              {% endfor %}
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <button class="btn btn-danger mt-3">Save Section 1.2</button>
+    </form>
+  </div>
+</div>
+<!--Section 1.2-->
+<script>
+  /* =========================
+     Section 1.2: Material dropdown → density
+     ========================= */
+  document.addEventListener("change", function (e) {
+    const select = e.target;
+    if (!select.classList.contains("material-select")) return;
+
+    const pos = select.dataset.pos;
+    const type = select.dataset.type;
+    const density = select.selectedOptions[0]?.dataset.density || 0;
+
+    const densityInput = document.querySelector(
+      `.density-input[data-type="${type}"][data-pos="${pos}"]`
+    );
+
+    if (densityInput) {
+      densityInput.value = Number(density).toFixed(5);
+      recalcAll(pos); // IMPORTANT
+    }
+  });
+
+  /* =========================
+     Helpers
+     ========================= */
+  function num(el) {
+    return el ? Number(el.value || 0) : 0;
+  }
+
+  function getValue(type, field, pos) {
+    return num(
+      document.querySelector(
+        `.${field}[data-type="${type}"][data-pos="${pos}"]`
+      )
+    );
+  }
+
+  function setValue(type, field, pos, value) {
+    const el = document.querySelector(
+      `.${field}[data-type="${type}"][data-pos="${pos}"]`
+    );
+    if (el) el.value = value.toFixed(3);
+  }
+
+  /* =========================
+     Section 1.2: Weight / PART
+     ========================= */
+  function recalcWeightPerPart(pos) {
+    const wa =
+      getValue("a", "density-input", pos) * getValue("a", "volume-input", pos);
+    const wb =
+      getValue("b", "density-input", pos) * getValue("b", "volume-input", pos);
+    const wc =
+      getValue("c", "density-input", pos) * getValue("c", "volume-input", pos);
+    const wd =
+      getValue("d", "density-input", pos) * getValue("d", "volume-input", pos);
+
+    setValue("a", "weight-input", pos, wa);
+    setValue("b", "weight-input", pos, wb);
+    setValue("c", "weight-input", pos, wc);
+    setValue("d", "weight-input", pos, wd);
+
+    const total = wa + wb + wc + wd;
+    const totalEl = document.querySelector(
+      `.total-weight-part[data-pos="${pos}"]`
+    );
+    if (totalEl) totalEl.value = total.toFixed(3);
+  }
+
+  /* =========================
+     Weight / CAR
+     ========================= */
+  function recalcWeightPerCar(pos) {
+    const parts = num(
+      document.querySelector(`.parts-per-car[data-pos="${pos}"]`)
+    );
+
+    const wa = num(
+      document.querySelector(`.weight-input[data-type="a"][data-pos="${pos}"]`)
+    );
+    const wb = num(
+      document.querySelector(`.weight-input[data-type="b"][data-pos="${pos}"]`)
+    );
+    const wc = num(
+      document.querySelector(`.weight-input[data-type="c"][data-pos="${pos}"]`)
+    );
+    const wd = num(
+      document.querySelector(`.weight-input[data-type="d"][data-pos="${pos}"]`)
+    );
+
+    const polyamide = wa * parts;
+    const terophon = wb * parts;
+    const steel = wc * parts;
+    const others = wd * parts;
+
+    const set = (cls, val) => {
+      const el = document.querySelector(`.${cls}[data-pos="${pos}"]`);
+      if (el) el.value = val.toFixed(3);
+    };
+
+    set("polyamide", polyamide);
+    set("terophon", terophon);
+    set("steel", steel);
+    set("others", others);
+
+    const total = polyamide + terophon + steel + others;
+    const totalEl = document.querySelector(
+      `.total-weight-car[data-pos="${pos}"]`
+    );
+    if (totalEl) totalEl.value = total.toFixed(3);
+  }
+
+  /* =========================
+     Master recalculation
+     ========================= */
+  function recalcAll(pos) {
+    recalcWeightPerPart(pos);
+    recalcWeightPerCar(pos);
+  }
+
+  /* =========================
+     ONE global input handler
+     ========================= */
+  document.addEventListener("input", function (e) {
+    const pos = e.target.dataset.pos;
+    if (!pos) return;
+    recalcAll(pos);
+  });
+</script>
+
+<!--Section 1.1-->
+<!-- ===========pos_plant_derivatives ============== -->
+<script>
+  function calculatePlantTotals() {
+    const totals = {};
+
+    // Initialize totals
+    document.querySelectorAll(".plant-total").forEach((total) => {
+      totals[total.dataset.pos] = 0;
+    });
+
+    // Sum derivatives
+    document.querySelectorAll(".plant-input").forEach((input) => {
+      const pos = input.dataset.pos;
+      const checkbox = input.previousElementSibling;
+
+      if (checkbox && checkbox.checked) {
+        totals[pos] += Number(input.value || 0);
+      }
+    });
+
+    // Update totals + Parts/Year
+    Object.keys(totals).forEach((pos) => {
+      const totalCarsInput = document.getElementById(`plant_total_${pos}`);
+      if (totalCarsInput) {
+        totalCarsInput.value = totals[pos];
+      }
+
+      calculatePartsPerYear(pos);
+    });
+  }
+
+  function calculatePartsPerYear(pos) {
+    const partsPerCarInput = document.querySelector(
+      `.parts-per-car[data-pos="${pos}"]`
+    );
+
+    const totalCarsInput = document.getElementById(`plant_total_${pos}`);
+
+    const partsPerYearInput = document.querySelector(
+      `.parts-per-year[data-pos="${pos}"]`
+    );
+
+    if (!partsPerCarInput || !totalCarsInput || !partsPerYearInput) return;
+
+    const partsPerCar = Number(partsPerCarInput.value || 0);
+    const totalCars = Number(totalCarsInput.value || 0);
+
+    partsPerYearInput.value = partsPerCar * totalCars;
+  }
+
+  // Recalculate when Parts / Car changes
+  document.addEventListener("input", function (e) {
+    if (e.target.classList.contains("parts-per-car")) {
+      calculatePartsPerYear(e.target.dataset.pos);
+    }
+  });
+
+  // Initial calculation
+  document.addEventListener("DOMContentLoaded", calculatePlantTotals);
+</script>
+<!-- ===========pos_plant_derivatives ============== -->
+
+<!-- Toggle Script -->
+<script>
+  function toggleQuotationForm() {
+    const card = document.getElementById("quotationFormCard");
+    card.classList.toggle("d-none");
+  }
+  function togglePartSpecificationForm() {
+    const card = document.getElementById("partSpecificationFormCard");
+    card.classList.toggle("d-none");
+  }
+</script>
+<style>
+  .table tr.table-dark td,
+  .table tr.table-secondary td {
+    font-size: 0.95rem;
+    letter-spacing: 0.5px;
+  }
+  /* Scroll container */
+  .table-scroll {
+    max-height: 75vh;
+    overflow-y: auto;
+    overflow-x: auto;
+  }
+
+  /* Sticky table header */
+  .table-scroll thead th {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    background: #f8f9fa; /* same as table-light */
+  }
+
+  /* Optional: Sticky section headers inside tbody */
+  .table-scroll tbody tr.table-dark td,
+  .table-scroll tbody tr.table-secondary td {
+    position: sticky;
+    top: 42px; /* height of thead */
+    z-index: 4;
+  }
+</style>
+{% endblock %}

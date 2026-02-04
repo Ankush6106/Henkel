@@ -1,0 +1,598 @@
+{% extends "base.html" %} {% block title %}Material Cost{% endblock %} {% block
+content %}
+
+<div class="d-flex gap-2 mb-4">
+  <button class="btn btn-danger" onclick="toggleQuotationForm()">
+    Quotation
+  </button>
+
+  <button
+    class="btn btn-outline-danger"
+    onclick="togglePartSpecificationForm()"
+    {%
+    if
+    not
+    quotation_id
+    %}disabled{%
+    endif
+    %}
+  >
+    Part Specification
+  </button>
+
+  <button
+    class="btn btn-outline-secondary"
+    {%
+    if
+    not
+    positions
+    %}disabled{%
+    endif
+    %}
+  >
+    Costing
+  </button>
+</div>
+
+{% if not quotation_id %}
+<small class="text-muted"> Save quotation to enable Part Specification </small>
+{% endif %}
+
+<!-- Toggle Button -->
+{% if not quotation_id %}
+<h4 class="text-danger mb-3">Quotation Details</h4>
+<button class="btn btn-outline-danger mb-3" onclick="toggleQuotationForm()">
+  + Add Quotation
+</button>
+{% endif %}
+
+<!-- Quotation Form Card -->
+<div id="quotationFormCard" class="card shadow-sm d-none">
+  <div class="card-body">
+    <form method="POST" action="/save_quotation">
+      <div class="row mb-3">
+        <div class="col-md-6">
+          <label class="form-label">Internal Project</label>
+          <input
+            type="text"
+            name="internal_Project"
+            class="form-control"
+            required
+          />
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label">Vehicle Code</label>
+          <input type="text" name="vehicle_code" class="form-control" />
+        </div>
+      </div>
+
+      <div class="row mb-3">
+        <div class="col-md-6">
+          <label class="form-label">OEM SOP</label>
+          <input type="text" name="OEM_SOP" class="form-control" />
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label">Henkel PL</label>
+          <input type="text" name="henkel_PL" class="form-control" />
+        </div>
+      </div>
+
+      <div class="row mb-3">
+        <div class="col-md-6">
+          <label class="form-label">Quotation Date</label>
+          <input type="date" name="quotation_date" class="form-control" />
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label">Quotation Revision Level</label>
+          <input
+            type="number"
+            name="quotation_rev_level"
+            class="form-control"
+          />
+        </div>
+      </div>
+
+      <div class="row mb-3">
+        <div class="col-md-6">
+          <label class="form-label">Supplier</label>
+          <input type="text" name="supplier" class="form-control" />
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label">Supplier Contact</label>
+          <input
+            type="text"
+            name="supplier_contact"
+            class="form-control"
+            maxlength="15"
+          />
+        </div>
+      </div>
+
+      <div class="row mb-3">
+        <div class="col-md-6">
+          <label class="form-label">LCUR for Quotation</label>
+          <input type="text" name="LCUR_for_quotation" class="form-control" />
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label">LCUR Abbreviation</label>
+          <input type="text" name="LCUR_abbreviation" class="form-control" />
+        </div>
+      </div>
+
+      <div class="text-end">
+        <button type="submit" class="btn btn-danger">Save Quotation</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!--Part specifications form-->
+<!-- Toggle Button -->
+{% if quotation_id %}
+<h4 class="text-danger mb-3">Part specifications</h4>
+
+<button
+  type="button"
+  class="btn btn-outline-danger mb-3"
+  onclick="togglePartSpecificationForm()"
+>
+  + Part specifications
+</button>
+{% endif %}
+
+<div id="partSpecificationFormCard" class="card shadow-sm d-none">
+  <div class="card-body">
+    <h5 class="text-danger">Generate Positions</h5>
+    {% if quotation_id %}
+    <form method="POST" action="/generate_positions/{{ quotation_id }}">
+      <label>No. of Positions</label>
+      <input type="number" name="pos_count" min="1" max="100" required />
+      <button class="btn btn-sm btn-danger">Generate</button>
+    </form>
+    {% endif %}
+
+    <form method="POST" action="/save_section_1_1/{{ quotation_id }}">
+      <table class="table table-bordered align-middle mt-4">
+        <thead class="table-light text-center">
+          <h4 class="bg-secondary text-light mt-2">
+            1.1 Project Details per Part
+          </h4>
+          <tr>
+            <th>POS Nr.</th>
+            {% for pos in positions %}
+            <th>Pos.{{ pos.pos_no }}</th>
+            {% endfor %}
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr
+            class="table-dark text-light section-header"
+            data-section="part-identification"
+            onclick="toggleSection('part-identification')"
+            style="cursor: pointer"
+          >
+            <td colspan="{{ positions|length + 1 }}">
+              <strong>▾ Part Identification</strong>
+            </td>
+          </tr>
+
+          <tr>
+            <td data-section-row="part-identification">Section</td>
+            {% for pos in positions %}
+            <td>
+              <input name="section[{{ pos.id }}]" class="form-control" />
+            </td>
+            {% endfor %}
+          </tr>
+
+          <tr data-section-row="part-identification">
+            <td>Design for offer</td>
+            {% for pos in positions %}
+            <td>
+              <input
+                name="design_for_offer[{{ pos.id }}]"
+                class="form-control"
+              />
+            </td>
+            {% endfor %}
+          </tr>
+
+          <tr data-section-row="part-identification">
+            <td>Customer Part Number</td>
+            {% for pos in positions %}
+            <td>
+              <input
+                name="customer_part_number[{{ pos.id }}]"
+                class="form-control"
+              />
+            </td>
+            {% endfor %}
+          </tr>
+
+          <tr data-section-row="part-identification">
+            <td>Customer Part Name</td>
+            {% for pos in positions %}
+            <td>
+              <input
+                name="customer_part_name[{{ pos.id }}]"
+                class="form-control"
+              />
+            </td>
+            {% endfor %}
+          </tr>
+
+          <tr data-section-row="part-identification">
+            <td>Henkel IDH Number</td>
+            {% for pos in positions %}
+            <td>
+              <input name="idh_number[{{ pos.id }}]" class="form-control" />
+            </td>
+            {% endfor %}
+          </tr>
+
+          <tr data-section-row="part-identification">
+            <td>IMDS Number</td>
+            {% for pos in positions %}
+            <td>
+              <input
+                type="number"
+                name="imds_number[{{ pos.id }}]"
+                class="form-control"
+              />
+            </td>
+            {% endfor %}
+          </tr>
+          <!--======================-->
+          <!--for section divider-->
+          <!--<tr class="table-secondary section-header"
+    data-section="design-concept"
+    onclick="toggleSection('design-concept')"
+    style="cursor:pointer">-->
+          <tr class="table-secondary">
+            <td colspan="{{ positions|length + 1 }}">
+              <strong>Design & Concept</strong>
+            </td>
+          </tr>
+
+          <!--<tr data-section-row="design-concept">-->
+          <tr>
+            <td>Henkel PN / Design level</td>
+            {% for pos in positions %}
+            <td>
+              <input
+                type="number"
+                name="design_level[{{ pos.id }}]"
+                class="form-control"
+              />
+            </td>
+            {% endfor %}
+          </tr>
+
+          <tr>
+            <td>Part concept</td>
+            {% for pos in positions %}
+            <td>
+              <select name="part_concept[{{ pos.id }}]" class="form-control">
+                <option value="">-- Select --</option>
+                {% for pc in part_concepts %}
+                <option value="{{ pc.id }}">{{ pc.partConceptName }}</option>
+                {% endfor %}
+              </select>
+            </td>
+            {% endfor %}
+          </tr>
+
+          <tr>
+            <td>Design Concept</td>
+            {% for pos in positions %}
+            <td>
+              <select name="design_concept[{{ pos.id }}]" class="form-control">
+                <option value="">-- Select --</option>
+                {% for dc in design_concepts %}
+                <option value="{{ dc.id }}">{{ dc.designConceptName }}</option>
+                {% endfor %}
+              </select>
+            </td>
+            {% endfor %}
+          </tr>
+
+          <tr>
+            <td>Clip Design</td>
+            {% for pos in positions %}
+            <td>
+              <input
+                type="text"
+                name="clip_design[{{ pos.id }}]"
+                class="form-control"
+              />
+            </td>
+            {% endfor %}
+          </tr>
+
+          <tr>
+            <td>Number of Clips</td>
+            {% for pos in positions %}
+            <td>
+              <input
+                type="number"
+                name="number_of_clips[{{ pos.id }}]"
+                class="form-control"
+              />
+            </td>
+            {% endfor %}
+          </tr>
+
+          <tr>
+            <td>Gap to the panel</td>
+            {% for pos in positions %}
+            <td>
+              <input
+                type="number"
+                name="gap_to_panel[{{ pos.id }}]"
+                class="form-control"
+              />
+            </td>
+            {% endfor %}
+          </tr>
+
+          <tr>
+            <td>Design Features</td>
+            {% for pos in positions %}
+            <td>
+              <input
+                type="number"
+                name="design_features[{{ pos.id }}]"
+                class="form-control"
+              />
+            </td>
+            {% endfor %}
+          </tr>
+
+          <tr>
+            <td>Life time (years)</td>
+            {% for pos in positions %}
+            <td>
+              <input
+                type="number"
+                name="lifetime_years[{{ pos.id }}]"
+                class="form-control"
+              />
+            </td>
+            {% endfor %}
+          </tr>
+
+          <!--=========================-->
+          <tr class="table-dark text-light">
+            <td colspan="{{ positions|length + 1 }}">
+              <strong>Production Volume – Plant / Car / Derivatives</strong>
+            </td>
+          </tr>
+
+          <!--pos_plant_derivatives-->
+
+          {% for d in range(1, 9) %}
+          <tr>
+            <td>Plant / Car / Derivat {{ d }} [(avg.) cars/a]</td>
+
+            {% for pos in positions %}
+            <td class="text-center">
+              <div class="d-flex gap-2 align-items-center">
+                <input
+                  type="checkbox"
+                  class="form-check-input derivative-check"
+                  data-pos="{{ pos.id }}"
+                  data-derivative="{{ d }}"
+                  name="derivative_selected[{{ pos.id }}][{{ d }}]"
+                  onchange="this.nextElementSibling.disabled = !this.checked;calculatePlantTotals();"
+                />
+
+                <input
+                  type="number"
+                  class="form-control plant-input"
+                  name="derivative_value[{{ pos.id }}][{{ d }}]"
+                  data-pos="{{ pos.id }}"
+                  data-derivative="{{ d }}"
+                  value="0"
+                  min="0"
+                  disabled
+                  oninput="calculatePlantTotals()"
+                />
+              </div>
+            </td>
+            {% endfor %}
+          </tr>
+          {% endfor %}
+          <tr class="table-secondary">
+            <td><strong>Total (avg.) cars / a</strong></td>
+
+            {% for pos in positions %}
+            <td>
+              <input
+                type="number"
+                class="form-control plant-total"
+                id="plant_total_{{ pos.id }}"
+                data-pos="{{ pos.id }}"
+                value="0"
+                readonly
+              />
+            </td>
+            {% endfor %}
+          </tr>
+          <!--pos_plant_derivatives-->
+
+          <!--=========================-->
+          <tr class="table-secondary">
+            <td colspan="{{ positions|length + 1 }}">
+              <strong>Annual Quantities</strong>
+            </td>
+          </tr>
+
+          <tr>
+            <td>Parts / Car</td>
+            {% for pos in positions %}
+            <td>
+              <input
+                type="number"
+                name="parts_per_car[{{ pos.id }}]"
+                class="form-control parts-per-car"
+                data-pos="{{ pos.id }}"
+              />
+            </td>
+            {% endfor %}
+          </tr>
+
+          <tr>
+            <td>Parts / Year (+/- 30%)</td>
+            {% for pos in positions %}
+            <td>
+              <input
+                type="number"
+                name="parts_per_year[{{ pos.id }}]"
+                class="form-control parts-per-year"
+                data-pos="{{ pos.id }}"
+                readonly
+              />
+            </td>
+            {% endfor %}
+          </tr>
+          <tr class="table-dark text-light">
+            <td colspan="{{ positions|length + 1 }}">
+              <strong>Comments</strong>
+            </td>
+          </tr>
+
+          <tr>
+            <td>Comments</td>
+            {% for pos in positions %}
+            <td>
+              <textarea
+                name="comments[{{ pos.id }}]"
+                class="form-control"
+              ></textarea>
+            </td>
+            {% endfor %}
+          </tr>
+        </tbody>
+      </table>
+
+      <button class="btn btn-danger">Save Section 1.1</button>
+    </form>
+  </div>
+</div>
+
+<script>
+  function toggleSection(section) {
+    const rows = document.querySelectorAll(`[data-section-row="${section}"]`);
+
+    const header = document.querySelector(
+      `.section-header[data-section="${section}"] strong`
+    );
+
+    let isHidden = rows[0]?.classList.contains("d-none");
+
+    rows.forEach((row) => row.classList.toggle("d-none"));
+
+    if (header) {
+      header.innerHTML = isHidden
+        ? header.innerHTML.replace("▸", "▾")
+        : header.innerHTML.replace("▾", "▸");
+    }
+  }
+</script>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  toggleSection("design-concept");
+  toggleSection("production-volume");
+  toggleSection("annual-quantities");
+  toggleSection("comments");
+});
+</script>
+
+<!--pos_plant_derivatives-->
+<script>
+  function calculatePlantTotals() {
+    const totals = {};
+
+    // Initialize totals
+    document.querySelectorAll(".plant-total").forEach((total) => {
+      totals[total.dataset.pos] = 0;
+    });
+
+    // Sum derivatives
+    document.querySelectorAll(".plant-input").forEach((input) => {
+      const pos = input.dataset.pos;
+      const checkbox = input.previousElementSibling;
+
+      if (checkbox && checkbox.checked) {
+        totals[pos] += Number(input.value || 0);
+      }
+    });
+
+    // Update totals + Parts/Year
+    Object.keys(totals).forEach((pos) => {
+      const totalCarsInput = document.getElementById(`plant_total_${pos}`);
+      if (totalCarsInput) {
+        totalCarsInput.value = totals[pos];
+      }
+
+      calculatePartsPerYear(pos);
+    });
+  }
+
+  function calculatePartsPerYear(pos) {
+    const partsPerCarInput = document.querySelector(
+      `.parts-per-car[data-pos="${pos}"]`
+    );
+
+    const totalCarsInput = document.getElementById(`plant_total_${pos}`);
+
+    const partsPerYearInput = document.querySelector(
+      `.parts-per-year[data-pos="${pos}"]`
+    );
+
+    if (!partsPerCarInput || !totalCarsInput || !partsPerYearInput) return;
+
+    const partsPerCar = Number(partsPerCarInput.value || 0);
+    const totalCars = Number(totalCarsInput.value || 0);
+
+    partsPerYearInput.value = partsPerCar * totalCars;
+  }
+
+  // Recalculate when Parts / Car changes
+  document.addEventListener("input", function (e) {
+    if (e.target.classList.contains("parts-per-car")) {
+      calculatePartsPerYear(e.target.dataset.pos);
+    }
+  });
+
+  // Initial calculation
+  document.addEventListener("DOMContentLoaded", calculatePlantTotals);
+</script>
+
+<!--pos_plant_derivatives-->
+
+<!-- Toggle Script -->
+<script>
+  function toggleQuotationForm() {
+    const card = document.getElementById("quotationFormCard");
+    card.classList.toggle("d-none");
+  }
+  function togglePartSpecificationForm() {
+    const card = document.getElementById("partSpecificationFormCard");
+    card.classList.toggle("d-none");
+  }
+</script>
+<style>
+  .table tr.table-dark td,
+  .table tr.table-secondary td {
+    font-size: 0.95rem;
+    letter-spacing: 0.5px;
+  }
+</style>
+{% endblock %}
