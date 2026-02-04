@@ -1,16 +1,9 @@
 from db import fetch_all, execute, get_db_connection, fetch_one
 from flask import Flask, render_template, redirect, url_for, request
 from decimal import Decimal
-from db import create_all_tables
-
 
 app = Flask(__name__)
 app.secret_key = "hnkl_secret_key"
-
-# Create tables **after** app is created
-with app.app_context():
-    create_all_tables()
-
 
 
 @app.route("/", methods=["GET", "POST"])
@@ -976,12 +969,11 @@ def save_section_1(quotation_id):
                 %s, %s, %s, %s, %s, %s, %s
             )
             ON DUPLICATE KEY UPDATE
-    personnel_employment_pct = VALUES(personnel_employment_pct),
-    labour_cost = VALUES(labour_cost),
-    labour_setup_cost = VALUES(labour_setup_cost),
-    labour_indirect_cost_pct = VALUES(labour_indirect_cost_pct),
-    labour_cost_per_part = VALUES(labour_cost_per_part)
-          
+                personnel_employment_pct = VALUES(personnel_employment_pct),            
+                labour_cost = VALUES(labour_cost),            
+                labour_setup_cost = VALUES(labour_setup_cost),            
+                labour_indirect_cost_pct = VALUES(labour_indirect_cost_pct),            
+                labour_cost_per_part = VALUES(labour_cost_per_part)            
         """, (
             quotation_id,
             pos_id,
@@ -1305,7 +1297,6 @@ def save_section_1(quotation_id):
 
 
 if __name__ == "__main__":
-    app.run()
-
+    app.run(debug=True)
 
 # calc_result=None   # calculator empty initially
